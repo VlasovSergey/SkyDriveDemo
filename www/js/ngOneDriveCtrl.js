@@ -149,9 +149,9 @@ function ngOneDriveCtrl() {
                     );
                 },
                 function(){
-                    if(navigator.app){
-                       // navigator.app.exitApp();
-                    }
+                    /*if(navigator.app){
+                       navigator.app.exitApp();
+                    }*/
                     ProgressIndicator.hide();
                     scope.showSignInButton = true;
                 }
