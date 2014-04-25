@@ -2,10 +2,6 @@ function ngOneDriveCtrl() {
     'use strict';
     var controllerId = 'ngOneDriveCtrl', // Controller name is handy for logging
         ROOT_TITLE = 'OneDrive',
-        SKYDRIVE_CLIENT_ID = "0000000048113444",
-        SKYDRIVE_REDIRECT_URI = "http://skydrivesuperdemo.com/skyDrive/index.html",
-        GOOGLEDRIVE_CLIENT_ID = "608994791757-mnhak64khir5gggp6328bbn6tovclmc9.apps.googleusercontent.com",
-        GOOGLEDRIVE_REDIRECT_URI = "https://www.example.com/oauth2callback",
         DOWNLOADED_STATE = 1,
         NOT_DOWNLOADED_STATE = 0,
         PROGRESS_STATE = 2,
@@ -89,30 +85,28 @@ function ngOneDriveCtrl() {
             ProgressIndicator.show(true);
             scope.search = true;
 
-            driveManager.fileSearch(search).then(
-                function(oneDriveFiles) {
+            window.getOneDriveInstance().fileSearch(search).then(
+                function (oneDriveFiles) {
+                    console.log('OneDrive: search completed');
+
                     addDownloadState(oneDriveFiles);
+                    
 
-                    scope.filesAndFolders = oneDriveFiles;
+                    window.getGoogleDriveInstance().fileSearch(search).then(
+                        function (googleDriveFiles) {
+                            console.log('GoogleDrive: search completed');
 
-                    updateStateOfDb();
-                    ProgressIndicator.hide();
-                    /*
-                    / google seasrch
-                    var GoogleDriveManager = "";
+                            scope.filesAndFolders = oneDriveFiles.concat(googleDriveFiles);
 
-                    GoogleDriveManager.fileSearch(search).then(
-                        function(googleDriveFiles) {
-                            // merge
-                            var result = oneDriveFiles + googleDriveFiles;
-
-                            scope.$apply();
+                            ProgressIndicator.hide();
+                            updateStateOfDb();                  
                         }
-                    );*/
-
-
+                    );
                 }
-            );
+            ).error(function (ex) {
+                console.log('Error: ' + JSON.stringify(ex));
+                ProgressIndicator.hide();
+            });
         },
 
         updateStateOfDb = function() {
@@ -181,11 +175,11 @@ function ngOneDriveCtrl() {
             scope.driveManager = true;
             switch (storage) {
                 case 'onedrive':
-                    driveManager = new OneDriveManager(SKYDRIVE_CLIENT_ID, SKYDRIVE_REDIRECT_URI);
+                    driveManager = window.getOneDriveInstance();
                     break;
 
                 case 'googledrive':
-                    driveManager = new GoogleDriveManager(GOOGLEDRIVE_CLIENT_ID, GOOGLEDRIVE_REDIRECT_URI);
+                    driveManager = window.getGoogleDriveInstance();
                     break;
             }
 
@@ -282,7 +276,15 @@ function ngOneDriveCtrl() {
                 toPreFolder();
             };
 
-            scope.getStyleForType = function (obj){
+            scope.getStyleForType = function (obj) {
+
+                if (obj.thumbnailLink) {
+                    return {
+                        'background-image': "url(" + obj.thumbnailLink + ")",
+                        'background-size': '100%'
+                    };
+                }
+
                 switch (obj.type) {
                     case "album": return {'background': "#3e4bff"};
                     case "audio":

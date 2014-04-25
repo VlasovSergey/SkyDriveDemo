@@ -2,6 +2,18 @@
  * Created by sergey.vlasov on 2/18/14.
  */
 
+window.getGoogleDriveInstance = function () {
+
+    var GOOGLEDRIVE_CLIENT_ID = "608994791757-mnhak64khir5gggp6328bbn6tovclmc9.apps.googleusercontent.com",
+        GOOGLEDRIVE_REDIRECT_URI = "https://www.example.com/oauth2callback";
+
+    if (!window.__googleDrive) {
+        window.__googleDrive = new GoogleDriveManager(GOOGLEDRIVE_CLIENT_ID, GOOGLEDRIVE_REDIRECT_URI);
+    }
+
+    return window.__googleDrive;
+}
+
 function GoogleDriveManager(_clientId, _redirectUri) {
 
     var ROOT_DIRECTORY = "root",
@@ -15,6 +27,8 @@ function GoogleDriveManager(_clientId, _redirectUri) {
         redirectUri,
         http,
         q,
+        searchUrl,
+        nameSearch,
 
         getAccessTokenFromURL = function (url) {
             url = url.substr(url.indexOf('access_token='));
@@ -60,6 +74,9 @@ function GoogleDriveManager(_clientId, _redirectUri) {
                 "&scope=openid%20profile%20https://www.googleapis.com/auth/drive.file%20https://www.googleapis.com/auth/drive%20https://www.googleapis.com/auth/userinfo.profile" +
                 "&state=redirect_type=auth" +
                 "&redirect_uri=" + redirectUri;
+
+            searchUrl = "https://www.googleapis.com/drive/v2/files?" +
+                "q=title%20contains%20'" + nameSearch + "'&" + accessToken;
         };
 
     clientId = _clientId;
@@ -142,33 +159,72 @@ function GoogleDriveManager(_clientId, _redirectUri) {
             q = $q;
         },
 
+        fileSearch: function (searName) {
+
+            console.log('GoogleDrive: search start');
+
+            var deferred = q.defer();
+            var me = this;
+            nameSearch = searName;
+            generateURLs();
+            console.log(searchUrl);
+
+            http({
+                method: 'GET',
+                url: searchUrl
+            }
+            ).success(
+                function (response) {
+                    me.sanitizeReponseData(response);
+                    deferred.resolve(response.items);
+                }).error(function (e) {
+                    console.log(JSON.stringify(e));
+                    deferred.resolve([]);
+                });
+
+            return deferred.promise;
+        },
+
+        sanitizeReponseData: function (response) {
+
+            response.items.forEach(function (item) {
+
+                if (item.mimeType == 'application/vnd.google-apps.folder') {
+                    item.type = 'folder';
+                    // Require separate request to count child items
+                    item.count = 0; // Just stub
+                } else {
+                    item.type = 'file';
+                }
+
+                item.updated_time = item.updated_time || item.modifiedDate;
+                // Dont work, item size did not shown in interface
+                item.size = item.size || item.fileSize;
+                item.name = item.name || item.title;
+                // TODO: try exportLinks property
+                item.source = item.source || item.downloadUrl;
+
+                //
+            });
+        
+        },
+
         loadFilesData: function (request) {
             var deferred = q.defer();
             var url = filesUrlForDirectory.replace("%folderID%", request || ROOT_DIRECTORY);
+            var me = this;
             http({
                 method: 'GET',
                 url: url
             }).success(
                 function (response) {
-                    response.items.forEach(function (item) {
+                    me.sanitizeReponseData(response);
 
-                        if (item.mimeType == 'application/vnd.google-apps.folder') {
-                            item.type = 'folder';
-                            // Require separate request to count child items
-                            item.count = 0; // Just stub
-                        } else {
-                            item.type = 'file';
-                        }
-
-                        item.updated_time = item.updated_time || item.modifiedDate;
-                        // Dont work, item size did not shown in interface
-                        item.size = item.size || item.fileSize;
-                        item.name = item.name || item.title;
-                        // TODO: try exportLinks property
-                        item.source = item.source || item.downloadUrl;
-                    });
                     deferred.resolve(response.items);
-                }).error(function (e) { alert(e); });
+                }).error(function (e) {
+                    console.log(JSON.stringify(e));
+                    deferred.resolve([]);
+                });
             return deferred.promise;
         },
 
