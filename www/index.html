@@ -9,8 +9,8 @@
 
     <title>OneDrive</title>
 
-    <link href="lib/bootstrap.css" rel="stylesheet">
-    <link href="css/app.css" rel="stylesheet">
+    <link href="../platforms/wp8/www/lib/bootstrap.css" rel="stylesheet">
+    <link href="../platforms/wp8/www/css/app.css" rel="stylesheet">
 
     <script type="text/javascript" charset="utf-8" src="lib/IndexedDBShim.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
@@ -20,7 +20,10 @@
     <button type="button" ng-click="StartLoginOneDrive()" class="btn btn-primary loginButton" role="button" >OneDrive</button>
     <button type="button" ng-click="StartLoginGoogleDrive()" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
 </div>
-<div class="container user-info">
+<h1 ng-if="oneDriveManager && showSignInButton" class="panel find">
+    <input class="textEdit"  class="pull-left" type="text" id="searchField"/> <button class="btnFind btn btn-primary pull-right" ng-click="doSearch()">find</button>
+</h1>
+<div ng-if="filesAndFolders!=null" class="container user-info">
     <div ng-if="userName!=null" >
         <h3 class="pull-left" >
             <button ng-if='directory!="OneDrive"' type="button" ng-click="toPreFolder()" class="btn btn-primary backButton" role="button" >&larr; Back</button>
@@ -33,9 +36,6 @@
 </div>
 <div id="id" class="container" >
     <div class="panel container" ng-if="filesAndFolders!=null" >
-        <h1 class="panel">
-            <input class="textEdit"  class="pull-left" type="text" id="searchField"/> <button class="btnFind btn btn-primary pull-right" ng-click="doSearch()">find</button>
-        </h1>
         <h1>{{directory}}</h1>
         <div class="items" ng-repeat="obj in filesAndFolders |  filter: obj.type " >
             <div tabindex="0" class="panel panel-body item" ng-click="displayFolder(obj)" >

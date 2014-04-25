@@ -12,7 +12,6 @@ function ngOneDriveCtrl() {
         q,
         app,
         oneDriveManager,
-        beforeSearch,
 
         dataBase,
         directoryIds = [],
@@ -37,9 +36,30 @@ function ngOneDriveCtrl() {
         },
 
         toPreFolder = function () {
-            if (scope.directory == ROOT_TITLE) {
-                navigator.app.exitApp();
+            if(scope.search) {
+                var folderId = directoryIds[directoryIds.length - 1];
+                oneDriveManager.loadFilesData(folderId + '/files')
+                    .then(
+                    function (data) {
+                        addDownloadState(data);
+                        scope.filesAndFolders = data;
+                        scope.directory += '/' + folder.name;
+                        directoryIds.push(folderId);
+                        updateStateOfDb();
+                        ProgressIndicator.hide();
+                    }
+                );
+                scope.search = false;
+                return;
             }
+
+            if (scope.directory == ROOT_TITLE && !scope.search) {
+                scope.filesAndFolders = null;
+                scope.showSignInButton = true;
+                scope.$apply();
+                return;
+            }
+
             ProgressIndicator.show(true);
             var dirArr = scope.directory.split('/'),
                 directoryToLoad = directoryIds.length - 2 >= 0 ? directoryIds[directoryIds.length - 2] + '/files' : null;
@@ -62,9 +82,11 @@ function ngOneDriveCtrl() {
         },
 
         doSearch = function(){
-            console.log('dosearch');
-
             var search =  $("#searchField").val();
+            if(search == ""){ return }
+            ProgressIndicator.show(true);
+            scope.search = true;
+
             oneDriveManager.fileSearch(search).then(
                 function(oneDriveFiles) {
                     addDownloadState(oneDriveFiles);
@@ -155,6 +177,7 @@ function ngOneDriveCtrl() {
         },
 
         run = function() {
+            scope.oneDriveManager = true;
             oneDriveManager = new OneDriveManager(CLIENT_ID, REDIRECT_URI);
             oneDriveManager.onControllerCreated(http, q);
             scope.showSignInButton = false;
@@ -230,6 +253,7 @@ function ngOneDriveCtrl() {
             };
 
             scope.signOut = function () {
+                scope.oneDriveManager = false;
                 oneDriveManager.signOut()
             };
 

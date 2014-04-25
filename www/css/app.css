@@ -20,6 +20,11 @@ body {
     color: #ffffff;
 }
 
+.find{
+    margin-top: 0;
+    background-color: #000000;
+}
+
 h1
 {
     font-size: 24pt; /* PhoneFontSizeExtraLarge */
