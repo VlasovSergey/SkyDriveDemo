@@ -35,7 +35,7 @@
             <div class="panel container" ng-if="filesAndFolders!=null" >
                 <h1>{{directory}}</h1>
                 <div class="items" ng-repeat="obj in filesAndFolders |  filter: obj.type " >
-                    <div class="panel panel-body item" ng-click="displayFolder(obj)" >
+                    <div  tabindex="0"  class="panel panel-body item" ng-click="displayFolder(obj)" >
                         <div class="item-div" style="height: 100%; width:100%"></div>
                         <div>
                             <div role="button" class="quad pull-left"  ng-style="getStyleForType(obj)">
