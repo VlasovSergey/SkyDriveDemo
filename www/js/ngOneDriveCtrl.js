@@ -83,7 +83,8 @@ function ngOneDriveCtrl() {
 
         doSearch = function(){
             var search =  $("#searchField").val();
-            if(search == ""){ return }
+            scope.showSignInButton = false;
+            //if(search == ""){ return }
             ProgressIndicator.show(true);
             scope.search = true;
 
