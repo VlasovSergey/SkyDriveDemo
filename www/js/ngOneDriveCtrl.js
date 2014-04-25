@@ -12,6 +12,7 @@ function ngOneDriveCtrl() {
         q,
         app,
         oneDriveManager,
+        beforeSearch,
 
         dataBase,
         directoryIds = [],
@@ -56,6 +57,36 @@ function ngOneDriveCtrl() {
 
                     updateStateOfDb();
                     ProgressIndicator.hide();
+                }
+            );
+        },
+
+        doSearch = function(){
+            console.log('dosearch');
+
+            var search =  $("#searchField").val();
+            oneDriveManager.fileSearch(search).then(
+                function(oneDriveFiles) {
+                    addDownloadState(oneDriveFiles);
+
+                    scope.filesAndFolders = oneDriveFiles;
+
+                    updateStateOfDb();
+                    ProgressIndicator.hide();
+                    /*
+                    / google seasrch
+                    var GoogleDriveManager = "";
+
+                    GoogleDriveManager.fileSearch(search).then(
+                        function(googleDriveFiles) {
+                            // merge
+                            var result = oneDriveFiles + googleDriveFiles;
+
+                            scope.$apply();
+                        }
+                    );*/
+
+
                 }
             );
         },
@@ -183,6 +214,10 @@ function ngOneDriveCtrl() {
                     }
                 );
             };
+
+            scope.doSearch = function() {
+                doSearch();
+            }
 
             scope.StartLoginGoogleDrive = function() {
                 console.log('oogleDrive');
