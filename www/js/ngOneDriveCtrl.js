@@ -150,7 +150,7 @@ function ngOneDriveCtrl() {
                 },
                 function(){
                     if(navigator.app){
-                        navigator.app.exitApp();
+                       // navigator.app.exitApp();
                     }
                     ProgressIndicator.hide();
                     scope.showSignInButton = true;
@@ -184,7 +184,13 @@ function ngOneDriveCtrl() {
                 );
             };
 
-            scope.StartLogin = function() {
+            scope.StartLoginGoogleDrive = function() {
+                console.log('oogleDrive');
+                run();
+            };
+
+            scope.StartLoginOneDrive = function() {
+                console.log('OneDrive');
                 run();
             };
 

@@ -17,8 +17,8 @@
     </head>
     <body ng-controller="ngOneDriveCtrl"  ontouchstart="" >
         <div ng-if='showSignInButton' class="loginPnel" >
-            <button type="button" ng-click="StartLogin()" class="btn btn-primary loginButton" role="button" >OneDrive</button>
-            <button type="button" ng-click="StartLogin()" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
+            <button type="button" ng-click="StartLoginOneDrive()" class="btn btn-primary loginButton" role="button" >OneDrive</button>
+            <button type="button" ng-click="StartLoginGoogleDrive()" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
         </div>
         <div class="container user-info">
             <div ng-if="userName!=null" >
