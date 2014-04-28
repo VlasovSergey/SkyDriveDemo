@@ -31,6 +31,28 @@ function OneDriveManager(_clientId, _redirectUri) {
         searchUrl,
         nameSearch,
 
+        doLoad = function(url) {
+            var deferred = q.defer();
+
+            http({
+                    method: 'GET',
+                    url: url}
+            ).success(
+                function (response) {
+                    response.data.forEach(function(item) {
+                        if (item.type == 'album') {
+                            item.type = 'folder';
+                        }
+                    });
+                    deferred.resolve(response.data);
+                }).error(function (e) {
+                    console.log(JSON.stringify(e));
+                    deferred.resolve([]);
+                });
+
+            return deferred.promise;
+        },
+
         getAccessTokenFromURL = function(url) {
             url = url.substr(url.indexOf('access_token='));
             if (url.length === 0) {
@@ -68,7 +90,7 @@ function OneDriveManager(_clientId, _redirectUri) {
             filesUrlForDirectory = "https://apis.live.net/v5.0/%folderID%/files?method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&suppress_redirects=true&"+accessToken;
             singOutUrl = "http://login.live.com/oauth20_logout.srf?" + accessToken + "&client_id=" + clientId + "&display=touch&locale=en&response_type=token&scope=wl.skydrive&state=redirect_type=auth&display=touch&request_ts=1392886026466&redirect_uri=x-wmapp0%253Awww%252Findex.html&response_method=url&secure_cookie=false&redirect_uri=" + redirectUri;
             signInUrl = "https://login.live.com/oauth20_authorize.srf?client_id=" + clientId + "&display=touch&locale=en&response_type=token&scope=wl.skydrive&state=redirect_type=auth&display=touch&redirect_uri=x-wmapp0%253Awww%252Findex.html&response_method=url&secure_cookie=false&redirect_uri=" + redirectUri;
-            searchUrl = "https://apis.live.net/v5.0/me/skydrive/search?q=" + nameSearch + "&method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&suppress_redirects=true&"+accessToken;
+            searchUrl =   "https://apis.live.net/v5.0/me/skydrive/search?q=" + nameSearch + "&method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&suppress_redirects=true&"+accessToken;
                // "https://apis.live.net/v5.0/me/skydrive/search?q=*&method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&access_token=EwBwAq1DBAAUGCCXc8wU%2FzFu9QnLdZXy%2BYnElFkAAaESto%2Fjf0osaWnlxjUTApKudk2Lly%2BBd5EH01yrvICrAKWfjyfzwcL3yT%2BLzR3qCxlhjYY%2BR79gdkJut3qDSjU4bTYZmT0SHPgDYS1Tj30t64jk6gkLxgJmR2GwhonvoX7xYvysPmYPB5bknfmVt1YVkQzmaWmXCt8FUzBhcvjzqIE%2Fm8gH0MHO7a%2FdDZOHDT9ou106YxAGSpu0wZa2XRw%2BvXKvMO53nXJFV0lsHWN3OtWE%2B%2BXdVo8HJsAvOUCA8Ye413g2M8Ul4Ncry5SYZVGFJ8Yb6dcZat9d1lRqfDIdRU%2BKWiYzW4r65BT1OTf%2BksO1XafN48xIlcGKTjfYOTsDZgAACHBiZRIaAuYBQAEV7LPgtz8tZUy61IDFiJ3cMZOOIAEOWh%2FaRi905M3PATwj4Qt6tu7dGbtLcyaBRzDKsHPSB2iKSeaAtn0g9iOC8ryzA%2Be%2FrKdTrBR4JY7fJVYFO8n977zYqEIOxp2mZ3rCJO7X39XqBVTzoM2aWXWog4QNOOEY%2BS%2Bqae%2Bwmw8uLVmm5K4SeVVMBxU2YwuW8oXu9M0qdEvisvgx%2FUr8MKi4NofvGHcEWx6PjYYkayx3b%2FnYhCmTfnCqeL%2BjUjdXAsBRo92WgJhgdaeehdliwlBXauF7tZdyA0K2z6qlP0tqUMKmHRefHFuavQg8eVa%2Ff4vji8aFNjlVjoEz7h12aYZPqK3pdhfAdY5QyeNQvfphy%2FdJIK3m61K7CzxrYMShY%2B8OwBe557UEkDQmbPlxnr4sMK7BY2r8LjmdZF%2BzSdqU20sB&callback=WL.Internal.jsonp.WLAPI_REQ_1_1398434574120&suppress_redirects=true";
         };
     clientId = _clientId;
@@ -159,26 +181,9 @@ function OneDriveManager(_clientId, _redirectUri) {
         },
 
         loadFilesData : function(request) {
-            var deferred = q.defer();
-            //window.external.Notify('progressbar_on');
+            var url = filesUrlForDirectory.replace("%folderID%", request||ROOT_DIRECTORY);
 
-            http({
-                method: 'GET',
-                url: filesUrlForDirectory.replace("%folderID%", request||ROOT_DIRECTORY)}
-            ).success(
-                function (response) {
-                    response.data.forEach(function(item) {
-                        if (item.type == 'album') {
-                            item.type = 'folder';
-                        }
-                    });
-                    deferred.resolve(response.data);
-                }).error(function (e) {
-                    console.log(JSON.stringify(e));
-                    deferred.resolve([]);
-                });
-
-            return deferred.promise;
+            return doLoad.call(this, url);
         },
 
         fileSearch: function (searName) {
@@ -186,28 +191,17 @@ function OneDriveManager(_clientId, _redirectUri) {
             var deferred = q.defer();
             nameSearch = searName;
             generateURLs();
-            console.log(searchUrl);
-            //window.external.Notify('progressbar_on');
-            if(!accessToken) {
-                deferred.resolve([])
-            } else {
-                http({
-                        method: 'GET',
-                        url: searchUrl}
-                ).success(
-                    function (response) {
-                          response.data.forEach(function(item) {
-                            if (item.type == 'album') {
-                                item.type = 'folder';
-                            }
-                        });
 
-                        deferred.resolve(response.data);
-                    }).error(function (e) {
-                        console.log(JSON.stringify(e));
-                        deferred.resolve([]);
-                    });
+            if(!accessToken) {
+                deferred.resolve([]);
+            } else {
+                doLoad.call(this, searchUrl).then(
+                    function(searchResult) {
+                        deferred.resolve(searchResult);
+                    }
+                );
             }
+
             return deferred.promise;
         },
 

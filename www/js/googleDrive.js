@@ -218,6 +218,7 @@ function GoogleDriveManager(_clientId, _redirectUri) {
             var deferred = q.defer();
             var url = filesUrlForDirectory.replace("%folderID%", request || ROOT_DIRECTORY);
             var me = this;
+            console.log(url);
             http({
                 method: 'GET',
                 url: url

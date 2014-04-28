@@ -51,7 +51,7 @@
     };
 
     window.DbManager = window.DbManager || {
-        createDB: function(nameDB, tableName, keyPath, parametersArray, onSuccess){
+        getDataBase: function(nameDB, tableName, keyPath, parametersArray, onSuccess){
             var idbRequest = indexedDB.open(nameDB, 2);
             idbRequest.onupgradeneeded =
                 function(event) {

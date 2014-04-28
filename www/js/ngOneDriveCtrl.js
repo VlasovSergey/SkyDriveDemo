@@ -1,14 +1,13 @@
-function ngOneDriveCtrl() {
+(function ngOneDriveCtrl() {
     'use strict';
-    var controllerId = 'ngOneDriveCtrl', // Controller name is handy for logging
-        ROOT_TITLE = 'OneDrive',
+    var controllerId = 'ngCloudDriveCtrl', // Controller name is handy for logging
+        ROOT_TITLE = 'Root directory',
         DOWNLOADED_STATE = 1,
         NOT_DOWNLOADED_STATE = 0,
         PROGRESS_STATE = 2,
         scope,
         http,
         q,
-        app,
         driveManager,
         dataBase,
         directoryIds = [],
@@ -33,49 +32,16 @@ function ngOneDriveCtrl() {
         },
 
         toPreFolder = function () {
-            if(scope.search) {
-                var folderId = directoryIds[directoryIds.length - 1];
-                driveManager.loadFilesData(folderId)
-                    .then(
-                    function (data) {
-                        addDownloadState(data);
-                        scope.filesAndFolders = data;
-                        scope.directory += '/' + folder.name;
-                        directoryIds.push(folderId);
-                        updateStateOfDb();
-                        ProgressIndicator.hide();
-                    }
-                );
-                scope.search = false;
-                return;
-            }
-
-            if (scope.directory == ROOT_TITLE && !scope.search) {
+            if (scope.directory == ROOT_TITLE || scope.search) {
                 scope.filesAndFolders = null;
                 scope.showSignInButton = true;
                 scope.$apply();
                 return;
             }
 
-            ProgressIndicator.show(true);
-            var dirArr = scope.directory.split('/'),
-                directoryToLoad = directoryIds.length - 2 >= 0 ? directoryIds[directoryIds.length - 2] : null;
+            var directoryToLoad = directoryIds.length - 2 >= 0 ? directoryIds[directoryIds.length - 2] : null;
 
-            driveManager.loadFilesData(directoryToLoad).then(
-                function (data) {
-                    addDownloadState(data);
-
-                    scope.filesAndFolders = data;
-
-                    directoryIds.splice(directoryIds.length - 1, 1);
-
-                    dirArr.splice(dirArr.length - 1, 1);
-                    scope.directory = dirArr.join("/");
-
-                    updateStateOfDb();
-                    ProgressIndicator.hide();
-                }
-            );
+            scope.displayFolder(directoryToLoad, "backward");
         },
 
         doSearch = function() {
@@ -159,7 +125,7 @@ function ngOneDriveCtrl() {
             driveManager.downloadFile(file.source, scope.directory + '/' + file.name, onSuccess, onError, onProgress);
         },
 
-        saveStageToDataBase = function(file){
+        saveStateToDataBase = function(file){
             file.state = PROGRESS_STATE;
             file.startProgress = true;
             file.progress = "0";
@@ -190,18 +156,11 @@ function ngOneDriveCtrl() {
                     ProgressIndicator.show(true);
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
-                            DbManager.createDB(userInfo.id, "loadState",'id',['state', 'url', 'localPath'], function(db){
+                            DbManager.getDataBase(userInfo.id, "loadState",'id',['state', 'url', 'localPath'], function(db){
                                 dataBase = db;
                             });
                             scope.userName = userInfo.name;
-                            driveManager.loadFilesData().then(
-                                function (data) {
-                                    addDownloadState(data);
-                                    scope.filesAndFolders = data;
-                                    updateStateOfDb();
-                                    ProgressIndicator.hide();
-                                }
-                            );
+                            scope.displayFolder();
                         }
                     );
                 },
@@ -223,18 +182,27 @@ function ngOneDriveCtrl() {
             scope.directory = ROOT_TITLE;
             scope.showSignInButton = true;
 
-            scope.displayFolder = function (folder) {
-                if (folder.count === undefined) return;
-                ProgressIndicator.show(true);
-                var folderId = folder.id;
+            scope.displayFolder = function (folder, direction) {
+                if (folder && folder.type && (folder.type !== "folder")) return;
 
-                driveManager.loadFilesData(folderId)
-                    .then(
+                ProgressIndicator.show(true);
+                var folderId = folder ? (folder.id ? folder.id : folder) : null;
+
+                driveManager.loadFilesData(folderId).then(
                     function (data) {
                         addDownloadState(data);
                         scope.filesAndFolders = data;
-                        scope.directory += '/' + folder.name;
-                        directoryIds.push(folderId);
+
+                        if(direction === "forward") {
+                            scope.directory += '/' + folder.name;
+                            directoryIds.push(folderId);
+                        } else if (direction === "backward") {
+                            directoryIds.splice(directoryIds.length - 1, 1);
+                            var dirArr = scope.directory.split('/');
+                            dirArr.splice(dirArr.length - 1, 1);
+                            scope.directory = dirArr.join("/");
+                        }
+
                         updateStateOfDb();
                         ProgressIndicator.hide();
                     }
@@ -268,7 +236,7 @@ function ngOneDriveCtrl() {
             };
 
             scope.onClickDownloadButton = function (file) {
-                saveStageToDataBase(file);
+                saveStateToDataBase(file);
                 downloadFile(file);
             };
             
@@ -320,14 +288,6 @@ function ngOneDriveCtrl() {
                 return strAr[0] + ' ' + strAr[1].split('+',1);
             };
         };
-    return {
-        initialize: function() {
-            // Define the controller on the module.
-            // Inject the dependencies.
-            // Point to the controller definition function.
-            app = angular.module('app', []).controller(controllerId, ['$scope', '$http', '$q', onControllerCreated]);
-        },
 
-        run: run
-    };
-}
+    angular.module('app', []).controller(controllerId, ['$scope', '$http', '$q', onControllerCreated]);
+})();
