@@ -35,7 +35,7 @@ function ngOneDriveCtrl() {
         toPreFolder = function () {
             if(scope.search) {
                 var folderId = directoryIds[directoryIds.length - 1];
-                driveManager.loadFilesData(folderId + '/files')
+                driveManager.loadFilesData(folderId)
                     .then(
                     function (data) {
                         addDownloadState(data);
@@ -59,7 +59,7 @@ function ngOneDriveCtrl() {
 
             ProgressIndicator.show(true);
             var dirArr = scope.directory.split('/'),
-                directoryToLoad = directoryIds.length - 2 >= 0 ? directoryIds[directoryIds.length - 2] + '/files' : null;
+                directoryToLoad = directoryIds.length - 2 >= 0 ? directoryIds[directoryIds.length - 2] : null;
 
             driveManager.loadFilesData(directoryToLoad).then(
                 function (data) {
@@ -228,7 +228,7 @@ function ngOneDriveCtrl() {
                 ProgressIndicator.show(true);
                 var folderId = folder.id;
 
-                driveManager.loadFilesData(folderId + '/files')
+                driveManager.loadFilesData(folderId)
                     .then(
                     function (data) {
                         addDownloadState(data);
