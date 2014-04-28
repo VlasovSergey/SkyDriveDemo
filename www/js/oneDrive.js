@@ -4,13 +4,14 @@
  * {http://skydrivesuperdemo.com/skyDrive/index.html#access_token=EwA4Aq1DBAAUGCCXc8wU/zFu9QnLdZXy+YnElFkAAdqlexTU7ZSo4VEOw1AG0+qq5werlglXA9MPwniDH8AUgjFwDmDDXsKHW04ZBuGbpaKqe7QCY/+4MHsDpvPKASiG1tkk1nz9fPKKBu0GuEgnI9QagBFKyFwFPbLTKjEh+qeRt40BA0mqTbvDjnDV2VOFc2s4eqvm1jZIV5zsuPcKBXIs2r0uNH6BhCOppK1F6+AqWrjCuKFBRQY3JInxB7XY/QJ1Mn/0G+wUIA1RFAQjCC5/uKzRVwsL+fdQpnjBp7v9PNZsV0oyj0fMO1OMheWRIS2Al7hNfyFEqVaKU1cvybBMcaTj/c5cJ46B7EsGsW3y31hDE48Lz2pwpI2djjgDZgAACHmiR3MWltDhCAHDp7gHzM2oTZ7HbW/7YvVEH8O/BQ19vhbQuIqEv5XsvIKSas18AMgeN3XmFjI9xyJusa+bWDsYsT0gv4ihUteYTu6+8RHVu2jpv/DOpd3K0VCeWnMmffkzHrSDwPXq3WA+a5wnSJAg9zQ+vXv/d6lUs9mUo4WCADXP+WS8wK7RwyTwCG298pO6SM9mJGZtaRZIiIGYAf5Mu0B4aYrxotrWgBDOBwtLQcQEgYN4dGn+1QEmd1nuhMeD0HK0Qr0xe1iAbnidkyQY6MZIhWd+y9QAFrMJzEjAmJn1gRm7BmaxCQiYCw6YvMxYvxVS25fbqT3Da1nzdAMnEg/REqfYalv65W85uJmxKIMAAA==&authentication_token=eyJhbGciOiJIUzI1NiIsImtpZCI6IjEiLCJ0eXAiOiJKV1QifQ.eyJ2ZXIiOjEsImlzcyI6InVybjp3aW5kb3dzOmxpdmVpZCIsImV4cCI6MTM5MjgyNjc1NywidWlkIjoiZGM2ZWI0YjA1M2FlNDc5ZTBhNzgxN2RjYmFkODNhZmUiLCJhdWQiOiJza3lkcml2ZXN1cGVyZGVtby5jb20iLCJ1cm46bWljcm9zb2Z0OmFwcHVyaSI6ImFwcGlkOi8vMDAwMDAwMDA0ODExMzQ0NCIsInVybjptaWNyb3NvZnQ6YXBwaWQiOiIwMDAwMDAwMDQ4MTEzNDQ0In0.HJe2GRNhnjvisIE-RDPwepuPu6vWbwGzXlUa_7ppj_A&token_type=bearer&expires_in=3600&scope=wl.skydrive wl.signin wl.skydrive_update wl.basic wl.share&state=redirect_type=auth&display=touch&request_ts=1392740288950&redirect_uri=x-wmapp0%253Awww%252Findex.html&response_method=url&secure_cookie=false}
  */
 
-window.getOneDriveInstance = function () {
+window.getOneDriveInstance = function (http, q) {
 
     var SKYDRIVE_CLIENT_ID = "0000000048113444",
         SKYDRIVE_REDIRECT_URI = "http://skydrivesuperdemo.com/skyDrive/index.html";
 
     if (!window.__oneDrive) {
         window.__oneDrive = new OneDriveManager(SKYDRIVE_CLIENT_ID, SKYDRIVE_REDIRECT_URI);
+        window.__oneDrive.onControllerCreated(http, q);
     }
 
     return window.__oneDrive;
@@ -111,7 +112,7 @@ function OneDriveManager(_clientId, _redirectUri) {
             ProgressIndicator.hide();
             //window.open(signInUrl, '_blank', 'location=no');
             //alert(signInUrl);
-            var inAppBrowser = window.open(signInUrl,'_blank', 'location=no');
+            var inAppBrowser = window.open(signInUrl,'_blank', 'location=no'),
                 deferred = q.defer();
             ProgressIndicator.show(true);
             inAppBrowser.addEventListener('loadstop',function(e){
@@ -163,7 +164,7 @@ function OneDriveManager(_clientId, _redirectUri) {
 
             http({
                 method: 'GET',
-                url:  filesUrlForDirectory.replace("%folderID%", request||ROOT_DIRECTORY)}
+                url: filesUrlForDirectory.replace("%folderID%", request||ROOT_DIRECTORY)}
             ).success(
                 function (response) {
                     response.data.forEach(function(item) {
@@ -187,23 +188,26 @@ function OneDriveManager(_clientId, _redirectUri) {
             generateURLs();
             console.log(searchUrl);
             //window.external.Notify('progressbar_on');
-            http({
-                    method: 'GET',
-                    url:  searchUrl}
-            ).success(
-                function (response) {
-                      response.data.forEach(function(item) {
-                        if (item.type == 'album') {
-                            item.type = 'folder';
-                        }
+            if(!accessToken) {
+                deferred.resolve([])
+            } else {
+                http({
+                        method: 'GET',
+                        url: searchUrl}
+                ).success(
+                    function (response) {
+                          response.data.forEach(function(item) {
+                            if (item.type == 'album') {
+                                item.type = 'folder';
+                            }
+                        });
+
+                        deferred.resolve(response.data);
+                    }).error(function (e) {
+                        console.log(JSON.stringify(e));
+                        deferred.resolve([]);
                     });
-
-                    deferred.resolve(response.data);
-                }).error(function (e) {
-                    console.log(JSON.stringify(e));
-                    deferred.resolve([]);
-                });
-
+            }
             return deferred.promise;
         },
 

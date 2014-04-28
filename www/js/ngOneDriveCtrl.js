@@ -78,34 +78,34 @@ function ngOneDriveCtrl() {
             );
         },
 
-        doSearch = function(){
+        doSearch = function() {
             var search =  $("#searchField").val();
             scope.showSignInButton = false;
             //if(search == ""){ return }
             ProgressIndicator.show(true);
             scope.search = true;
 
-            window.getOneDriveInstance().fileSearch(search).then(
+            window.getOneDriveInstance(http, q).fileSearch(search).then(
                 function (oneDriveFiles) {
                     console.log('OneDrive: search completed');
 
                     addDownloadState(oneDriveFiles);
-                    
 
-                    window.getGoogleDriveInstance().fileSearch(search).then(
+                    window.getGoogleDriveInstance(http, q).fileSearch(search).then(
                         function (googleDriveFiles) {
                             console.log('GoogleDrive: search completed');
-
                             scope.filesAndFolders = oneDriveFiles.concat(googleDriveFiles);
 
                             ProgressIndicator.hide();
-                            updateStateOfDb();                  
+                            updateStateOfDb();
                         }
                     );
                 }
             ).error(function (ex) {
                 console.log('Error: ' + JSON.stringify(ex));
                 ProgressIndicator.hide();
+                scope.search = false;
+                scope.showSignInButton = true;
             });
         },
 
@@ -187,7 +187,7 @@ function ngOneDriveCtrl() {
             scope.showSignInButton = false;
             driveManager.signIn().then(
                 function () {
-                    ProgressIndicator.show();
+                    ProgressIndicator.show(true);
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
                             DbManager.createDB(userInfo.id, "loadState",'id',['state', 'url', 'localPath'], function(db){
@@ -319,7 +319,6 @@ function ngOneDriveCtrl() {
                 var strAr = date.split('T');
                 return strAr[0] + ' ' + strAr[1].split('+',1);
             };
-            console.log('ennnnn');
         };
     return {
         initialize: function() {
