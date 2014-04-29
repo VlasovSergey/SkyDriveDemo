@@ -68,7 +68,7 @@ function GoogleDriveManager(_clientId, _redirectUri) {
             filesUrlForDirectory = "https://www.googleapis.com/drive/v2/files?" +
                 "q='%folderID%'%20in%20parents%20and%20(trashed%20=%20false)&" + accessToken;
             filesUrlForRootDirectory = "https://www.googleapis.com/drive/v2/files?" + accessToken;
-            singOutUrl = "https://accounts.google.com/o/oauth2/revoke?" + accessToken;
+            singOutUrl = "https://accounts.google.com/logout?" ;
             signInUrl = "https://accounts.google.com/o/oauth2/auth?" +
                 "client_id=" + clientId +
                 "&response_type=token" +
@@ -145,14 +145,16 @@ function GoogleDriveManager(_clientId, _redirectUri) {
         },
 
         signOut: function () {
+            var deferred = q.defer();
             var inAppBrowser = window.open(singOutUrl, '_blank', 'location=no');
             ProgressIndicator.show(true);
-            inAppBrowser.addEventListener('loadstart', function (e) {
-                if (e.url.indexOf(redirectUri) === 0) {
+            inAppBrowser.addEventListener('loadstop', function (e) {
+                if (e.url.indexOf("https://accounts.google.com/ServiceLogin") === 0) {
                     inAppBrowser.close();
-                    location.reload();
+                    deferred.resolve();
                 }
             });
+            return deferred.promise;
         },
 
         onControllerCreated: function ($http, $q) {
@@ -169,7 +171,6 @@ function GoogleDriveManager(_clientId, _redirectUri) {
             var me = this;
             nameSearch = searName;
             generateURLs();
-            console.log(searchUrl);
 
             if(!accessToken) {
                 deferred.resolve([])
@@ -218,7 +219,7 @@ function GoogleDriveManager(_clientId, _redirectUri) {
             var deferred = q.defer();
             var url = filesUrlForDirectory.replace("%folderID%", request || ROOT_DIRECTORY);
             var me = this;
-            console.log(url);
+
             http({
                 method: 'GET',
                 url: url
