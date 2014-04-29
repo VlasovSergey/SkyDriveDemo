@@ -27,26 +27,32 @@ namespace WPCordovaClassLib.Cordova.Commands
 
         public void addProgressBar(String colorStr)
         {
-            if (progressBar != null) return;
+            if (progressBar != null ) return;
 
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
                 progressBar = new ProgressBar();
                 progressBar.IsIndeterminate = true;
                 progressBar.Visibility = Visibility.Visible;
-                try
+                if (colorStr != null)
                 {
-                    var brush = new SolidColorBrush(
-                            Color.FromArgb(
-                                255,
-                                Convert.ToByte(colorStr.Substring(1, 2), 16),
-                                Convert.ToByte(colorStr.Substring(3, 2), 16),
-                                Convert.ToByte(colorStr.Substring(5, 2), 16)
-                            )
-                        );
-                    progressBar.Foreground = brush;
+                    try
+                    {
+                        var brush = new SolidColorBrush(
+                                Color.FromArgb(
+                                    255,
+                                    Convert.ToByte(colorStr.Substring(1, 2), 16),
+                                    Convert.ToByte(colorStr.Substring(3, 2), 16),
+                                    Convert.ToByte(colorStr.Substring(5, 2), 16)
+                                )
+                            );
+                        progressBar.Foreground = brush;
+                    }
+                    catch (Exception ex)
+                    {
+                        this.DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR, "Invalid color string."));
+                    }
                 }
-                catch { }
 
                 PhoneApplicationFrame frame = Application.Current.RootVisual as PhoneApplicationFrame;
                 if (frame != null)
@@ -120,20 +126,35 @@ namespace WPCordovaClassLib.Cordova.Commands
 
         public void show(string options)
         {
-            var optStings = JSON.JsonHelper.Deserialize<string[]>(options);
-
-            bool tapDisable = Convert.ToBoolean(optStings[0]);
-            if (tapDisable)
+            try
             {
-                setBrowserEnable(false);
+                var optStings = JSON.JsonHelper.Deserialize<string[]>(options);
+
+                bool tapDisable = Convert.ToBoolean(optStings[0]);
+                if (tapDisable)
+                {
+                    setBrowserEnable(false);
+                }
+                addProgressBar(optStings[2]);
+                this.DispatchCommandResult(new PluginResult(PluginResult.Status.OK));
+            } catch (Exception ex)
+            {
+                this.DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR, ex.Message));
             }
-            addProgressBar(optStings[2]);
+
         }
 
         public void hide(string options)
         {
-            removeProgressBar();
-            setBrowserEnable(true);
+            try
+            {
+                removeProgressBar();
+                setBrowserEnable(true);
+                this.DispatchCommandResult(new PluginResult(PluginResult.Status.OK));
+            } catch (Exception ex)
+            {
+                this.DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR, ex.Message));
+            }
         }
     }
 }
