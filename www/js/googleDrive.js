@@ -208,7 +208,7 @@ function GoogleDriveManager(_clientId, _redirectUri) {
                 item.size = item.size || item.fileSize;
                 item.name = item.name || item.title;
                 // TODO: try exportLinks property
-                item.source = item.source || item.downloadUrl;
+                //item.source = item.source || item.downloadUrl;
 
                 //
             });
