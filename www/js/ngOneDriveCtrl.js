@@ -140,7 +140,6 @@
         },
 
         run = function (storage) {
-            scope.driveManager = true;
             switch (storage) {
                 case 'onedrive':
                     driveManager = window.getOneDriveInstance();
@@ -153,11 +152,13 @@
 
             driveManager.onControllerCreated(http, q);
             scope.showSignInButton = false;
+
             driveManager.signIn().then(
                 function () {
                     ProgressIndicator.show(true);
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
+                            scope.driveManager = true;
                             DbManager.getDataBase(userInfo.id, "loadState",'id',['state', 'url', 'localPath'], function(db){
                                 dataBase = db;
                             });
@@ -167,8 +168,8 @@
                     );
                 },
                 function(){
-                    /*if(navigator.app){
-                       navigator.app.exitApp();
+                    /*if(window.getOneDriveInstance().getAccessToken() == null && window.getGoogleDriveInstance().getAccessToken() == null) {
+                        scope.driveManager = false;
                     }*/
                     ProgressIndicator.hide();
                     scope.showSignInButton = true;
@@ -178,9 +179,11 @@
         
         onControllerCreated = function ($scope, $http, $q) {
             scope = $scope;
-            http=$http;
-            q=$q;
-            document.addEventListener("backbutton", toPreFolder, true);
+            http = $http;
+            q = $q;
+
+            document.addEventListener("backbutton", toPreFolder, false);
+
             scope.directory = ROOT_TITLE;
             scope.showSignInButton = true;
 
