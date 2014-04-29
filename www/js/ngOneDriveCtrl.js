@@ -179,7 +179,11 @@
             http = $http;
             q = $q;
 
-            document.addEventListener("backbutton", toPreFolder, false);
+            document.addEventListener("backbutton",
+                function() {
+                    if(!ProgressIndicator.isShow) toPreFolder();
+                }, false);
+
 
             scope.directory = ROOT_TITLE;
             scope.showSignInButton = true;
@@ -225,7 +229,6 @@
                         driveManager.setAccessToken(null);
                         if(window.getOneDriveInstance().getAccessToken() == null && window.getGoogleDriveInstance().getAccessToken() == null) {
                             scope.driveManager = false;
-                            console.log('+++');
                         }
                         scope.filesAndFolders = null;
                         ProgressIndicator.hide();
