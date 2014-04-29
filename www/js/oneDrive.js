@@ -165,14 +165,16 @@ function OneDriveManager(_clientId, _redirectUri) {
         },
 
         signOut: function() {
+            var deferred = q.defer();
             var inAppBrowser = window.open(singOutUrl, '_blank', 'location=no');
             ProgressIndicator.show(true);
             inAppBrowser.addEventListener('loadstart', function(e) {
                 if (e.url.indexOf(redirectUri) === 0) {
                     inAppBrowser.close();
-                    location.reload();
+                    deferred.resolve();
                 }
             });
+            return deferred.promise;
         },
 
         onControllerCreated: function ($http, $q) {

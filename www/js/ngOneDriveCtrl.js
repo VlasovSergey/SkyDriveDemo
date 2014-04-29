@@ -159,7 +159,7 @@
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
                             scope.driveManager = true;
-                            DbManager.getDataBase(userInfo.id, "loadState",'id',['state', 'url', 'localPath'], function(db){
+                            DbManager.getDataBase(userInfo.id, "loadState", 'id', ['state', 'url', 'localPath'], function(db) {
                                 dataBase = db;
                             });
                             scope.userName = userInfo.name;
@@ -168,9 +168,6 @@
                     );
                 },
                 function(){
-                    /*if(window.getOneDriveInstance().getAccessToken() == null && window.getGoogleDriveInstance().getAccessToken() == null) {
-                        scope.driveManager = false;
-                    }*/
                     ProgressIndicator.hide();
                     scope.showSignInButton = true;
                 }
@@ -223,8 +220,19 @@
             };
 
             scope.signOut = function () {
-                scope.driveManager = false;
-                driveManager.signOut();
+                driveManager.signOut().then(
+                    function() {
+                        driveManager.setAccessToken(null);
+                        if(window.getOneDriveInstance().getAccessToken() == null && window.getGoogleDriveInstance().getAccessToken() == null) {
+                            scope.driveManager = false;
+                            console.log('+++');
+                        }
+                        scope.filesAndFolders = null;
+                        ProgressIndicator.hide();
+                        scope.showSignInButton = true;
+                        scope.$apply();
+                    }
+                );
             };
 
             scope.openFile = function (file) {
