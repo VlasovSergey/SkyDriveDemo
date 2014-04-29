@@ -32,7 +32,9 @@
         },
 
         toPreFolder = function () {
-            if (scope.directory == ROOT_TITLE || scope.search) {
+            if (scope.showSignInButton == true && navigator.app ) {
+                navigator.app.exitApp();
+            } else if (scope.directory == ROOT_TITLE || scope.search) {
                 scope.filesAndFolders = null;
                 scope.showSignInButton = true;
                 scope.$apply();
