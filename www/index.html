@@ -15,7 +15,7 @@
     <script type="text/javascript" charset="utf-8" src="lib/IndexedDBShim.min.js"></script>
     <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
 </head>
-<body ng-controller="ngOneDriveCtrl"  ontouchstart="" >
+<body ng-controller="ngCloudDriveCtrl"  ontouchstart="" >
     <div ng-if='showSignInButton' class="loginPnel" >
         <button type="button" ng-click="StartLogin('onedrive')" class="btn btn-primary loginButton" role="button" >OneDrive</button>
         <button type="button" ng-click="StartLogin('googledrive')" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
@@ -38,11 +38,11 @@
         <div class="panel container" ng-if="filesAndFolders!=null" >
             <h1>{{directory}}</h1>
             <div class="items" ng-repeat="obj in filesAndFolders |  filter: obj.type " >
-                <div tabindex="0" class="panel panel-body item" ng-click="displayFolder(obj)" >
+                <div tabindex="0" class="panel panel-body item" ng-click="displayFolder(obj, 'forward')" >
                     <div class="item-div" style="height: 100%; width:100%"></div>
                     <div>
                         <div role="button" class="quad pull-left"  ng-style="getStyleForType(obj)">
-                            <h3 class="files-count">{{obj.count}}</h3>
+                            <h3 class="files-count" ng-if="obj.count">{{obj.count}}</h3>
                         </div>
                         <h2 class="clip">{{obj.name}}</h2>
                         <h3 class="masthead-lead">{{generateDateTime(obj.updated_time)}}</h3>
@@ -52,7 +52,7 @@
                         <div ng-if="obj.state == 2" class="progress active" >
                             <div class="progress-bar"  role="progressbar" aria-valuenow="100"  aria-valuemin="0" aria-valuemax="100" ng-style="{width: obj.progress +'%'}"></div>
                         </div>
-                        <input type="button" value="download" class="btn btn-primary " ng-if="obj.state==0 && obj.source" ng-click="onClickDownloadButton(obj)">
+                        <input type="button" value="download" class="btn btn-primary " ng-if="obj.state==0 && obj.source" ng-click="onClickDownloadButton(obj)" />
                         <input type="button" value="open" class="btn btn-primary" ng-if="obj.state==1 || obj.embedLink"  ng-click="openFile(obj)"/>
                         <input type="button" value="reload" class="btn btn-primary" ng-if="obj.state==1"  ng-click="onClickDownloadButton(obj)"/>
                     </div>

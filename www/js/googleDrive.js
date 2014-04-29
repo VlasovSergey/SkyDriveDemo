@@ -198,7 +198,7 @@ function GoogleDriveManager(_clientId, _redirectUri) {
                 if (item.mimeType == 'application/vnd.google-apps.folder') {
                     item.type = 'folder';
                     // Require separate request to count child items
-                    item.count = 0; // Just stub
+                    //item.count = ""; // Just stub
                 } else {
                     item.type = 'file';
                 }
