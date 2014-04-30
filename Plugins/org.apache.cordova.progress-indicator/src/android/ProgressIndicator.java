@@ -21,10 +21,12 @@ public class ProgressIndicator extends CordovaPlugin {
             try {
                 if (action.equals("show")) {
                     show(args.getBoolean(0), args.getString(1), args.getString(2));
+                    callbackContext.success();
                     return true;
                 }
                 if (action.equals("hide")) {
                     hide();
+                    callbackContext.success();
                     return true;
                 }
                 return false; // invalid action
