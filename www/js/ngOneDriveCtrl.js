@@ -68,8 +68,14 @@
                             updateStateOfDb();
                         }
                     );
+                },
+                function() {
+                    ProgressIndicator.hide();
+                    scope.search = false;
+                    scope.showSignInButton = true;
                 }
             ).error(function (ex) {
+                //TODO
                 console.log('Error: ' + JSON.stringify(ex));
                 ProgressIndicator.hide();
                 scope.search = false;
@@ -80,7 +86,7 @@
         updateStateOfDb = function() {
             scope.filesAndFolders.forEach(function(fileInfo){
                 if (fileInfo.type != 'folder') {
-                    dataBase.readItem(fileInfo.id, function(fileData){
+                    dataBase.readItem(fileInfo.id, function(fileData) {
                         if (!fileData) return;
                         var file = getFilesByParameter('id', fileData.id)[0];
                         setFileState(file, fileData.state);
@@ -168,9 +174,11 @@
                         }
                     );
                 },
-                function(){
+                function(accessToken){
                     ProgressIndicator.hide();
-                    scope.showSignInButton = true;
+                    if (accessToken){
+                        scope.showSignInButton = true;
+                    }
                 }
             );
         },
@@ -211,6 +219,9 @@
                         }
 
                         updateStateOfDb();
+                        ProgressIndicator.hide();
+                    },
+                    function() {
                         ProgressIndicator.hide();
                     }
                 );

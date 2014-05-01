@@ -40,23 +40,39 @@ function OneDriveManager(_clientId, _redirectUri) {
                 }
             ).success(
                 function (response) {
-                    response.data.forEach(function(item) {
-                        if (item.type == 'album') {
-                            item.type = 'folder';
-                        }
-                        if(item.source) {
-                            item.source = getDownloadUrlByFileId(item.id);
-                        }
-                        if (item.type == "photo" || item.type == "video" ) {
-                            item.previewUrl = getPreviewUrl(item.id);
-                        }
-                    });
+                    response = JSON.parse(response.substring(6, response.length - 2 ));
+                    if(response.error && response.error.code == "request_token_invalid") {
+                        accessToken = null;
+                        this.signIn().then(function() {
+                            doLoad(url).then(
+                                function(){
+                                    deferred.resolve(response.data);
+                                },
+                                function() {
+                                    deferred.reject();
+                                }
+                            );
+                        });
+                    } else {
+                        response.data.forEach(function(item) {
+                            if (item.type == 'album') {
+                                item.type = 'folder';
+                            }
+                            if(item.source) {
+                                item.source = getDownloadUrlByFileId(item.id);
+                            }
+                            if (item.type == "photo" || item.type == "video" ) {
+                                item.previewUrl = getPreviewUrl(item.id);
+                            }
+                        });
+                    }
+
                     deferred.resolve(response.data);
-                }).error(function (e) {
+                }.bind(this)
+                ).error(function (e) {
                     console.log(JSON.stringify(e));
                     deferred.resolve([]);
                 });
-
             return deferred.promise;
         },
 
@@ -102,10 +118,10 @@ function OneDriveManager(_clientId, _redirectUri) {
 
         generateURLs = function() {
             userInfoUrl = "https://apis.live.net/v5.0/me/?method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&suppress_redirects=true&"+accessToken;
-            filesUrlForDirectory = "https://apis.live.net/v5.0/%folderID%/files?method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&suppress_redirects=true&"+accessToken;
+            filesUrlForDirectory = "https://apis.live.net/v5.0/%folderID%/files?method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&suppress_redirects=true&callback=JSONP&" + accessToken;
             singOutUrl = "http://login.live.com/oauth20_logout.srf?" + accessToken + "&client_id=" + clientId + "&display=touch&locale=en&response_type=token&scope=wl.skydrive&state=redirect_type=auth&display=touch&request_ts=1392886026466&redirect_uri=x-wmapp0%253Awww%252Findex.html&response_method=url&secure_cookie=false&redirect_uri=" + redirectUri;
             signInUrl = "https://login.live.com/oauth20_authorize.srf?client_id=" + clientId + "&display=touch&locale=en&response_type=token&scope=wl.skydrive&state=redirect_type=auth&display=touch&redirect_uri=x-wmapp0%253Awww%252Findex.html&response_method=url&secure_cookie=false&redirect_uri=" + redirectUri;
-            searchUrl = "https://apis.live.net/v5.0/me/skydrive/search?q=" + nameSearch + "&method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&suppress_redirects=true&"+accessToken;
+            searchUrl = "https://apis.live.net/v5.0/me/skydrive/search?q=" + nameSearch + "&method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&suppress_redirects=true&callback=JSONP&"+accessToken;
         };
     clientId = _clientId;
     redirectUri = _redirectUri;
@@ -144,37 +160,31 @@ function OneDriveManager(_clientId, _redirectUri) {
             generateURLs();
         },
 
-        signIn: function(onSuccess) {
+        signIn: function() {
             ProgressIndicator.hide();
+            var deferred = q.defer();
+            if (!accessToken) {
+                var inAppBrowser = window.open(signInUrl,'_blank', 'location=no');
+                ProgressIndicator.show(true);
 
-            var inAppBrowser = window.open(signInUrl,'_blank', 'location=no'),
-                deferred = q.defer();
-            ProgressIndicator.show(true);
-            inAppBrowser.addEventListener('loadstop',function(e) {
-                                          //alert('loadstop');
-                ProgressIndicator.hide();
-            });
-            
-            /*inAppBrowser.addEventListener('loaderror', function(e){
-                                          alert('loaderror::'+e.message);
-                                          });*/
-            
-            inAppBrowser.addEventListener('loadstart', function (e) {
-                //alert('staart url='+e.url);
-                if (e.url.indexOf("access_token=") > 0) {
-                    accessToken = getAccessTokenFromURL(e.url);
-                    deferred.resolve(accessToken);
-                    inAppBrowser.close();
-                }
-            });
+                inAppBrowser.addEventListener('loadstop',function(e) {
+                    ProgressIndicator.hide();
+                });
 
-            inAppBrowser.addEventListener('exit', function(e) {
-                ProgressIndicator.hide();
-                if(!accessToken){
-                    deferred.reject();
-                }
-            });
+                inAppBrowser.addEventListener('loadstart', function (e) {
+                    if (e.url.indexOf("access_token=") > 0) {
+                        accessToken = getAccessTokenFromURL(e.url);
+                        deferred.resolve(accessToken);
+                        inAppBrowser.close();
+                    }
+                });
 
+                inAppBrowser.addEventListener('exit', function(e) {
+                    deferred.reject(accessToken);
+                });
+            } else {
+                deferred.resolve(accessToken);
+            }
             return deferred.promise;
         },
 
@@ -214,6 +224,9 @@ function OneDriveManager(_clientId, _redirectUri) {
                 doLoad.call(this, searchUrl).then(
                     function(searchResult) {
                         deferred.resolve(searchResult);
+                    },
+                    function() {
+                        deferred.reject();
                     }
                 );
             }
