@@ -79,13 +79,15 @@
 
         updateStateOfDb = function() {
             scope.filesAndFolders.forEach(function(fileInfo){
-                if (fileInfo.type != 'folder'){
+                if (fileInfo.type != 'folder') {
                     dataBase.readItem(fileInfo.id, function(fileData){
                         if (!fileData) return;
                         var file = getFilesByParameter('id', fileData.id)[0];
                         setFileState(file, fileData.state);
                         file.localPath = fileData.localPath;
-                        file.source = fileData.url;
+                        if (fileData.url) {
+                            file.source = fileData.url;
+                        }
                         if (!file.startProgress && file.state == PROGRESS_STATE){
                             downloadFile(file);
                         }
@@ -105,7 +107,6 @@
                     dataBase.addItem({
                         id: fileNew.id,
                         state: DOWNLOADED_STATE,
-                        url: fileNew.source,
                         localPath: fileNew.localPath
                     });
                     scope.$apply();
