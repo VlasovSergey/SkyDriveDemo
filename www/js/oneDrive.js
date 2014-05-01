@@ -47,6 +47,9 @@ function OneDriveManager(_clientId, _redirectUri) {
                         if(item.source) {
                             item.source = getDownloadUrlByFileId(item.id);
                         }
+                        if (item.type == "photo" || item.type == "video" ) {
+                            item.previewUrl = getPreviewUrl(item.id);
+                        }
                     });
                     deferred.resolve(response.data);
                 }).error(function (e) {
@@ -59,6 +62,10 @@ function OneDriveManager(_clientId, _redirectUri) {
 
         getDownloadUrlByFileId = function(id) {
             return "https://apis.live.net/v5.0/" + id + "/content?" + accessToken;
+        },
+
+        getPreviewUrl = function(id){
+          return  "https://apis.live.net/v5.0/" + id + "/picture?type=thumbnail&"+ accessToken;
         },
 
         getAccessTokenFromURL = function(url) {

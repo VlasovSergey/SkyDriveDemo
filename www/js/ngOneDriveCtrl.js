@@ -19,8 +19,8 @@
                 });
         },
 
-        addDownloadState = function(fileList){
-            fileList.forEach(function(fileInfo){
+        addDownloadState = function(fileList) {
+            fileList.forEach(function(fileInfo) {
                 if(fileInfo.type !== 'folder'){
                     setFileState(fileInfo, NOT_DOWNLOADED_STATE);
                 }
@@ -283,13 +283,13 @@
                     case "folder": return {'background': "#3e4bff"};
                     case "photo":
                         return {
-                            'background-image': "url(" + obj.images[2].source + ")",
+                            'background-image': "url(" + obj.previewUrl + ")",
                             'background-size': '100%',
                             'background-repeat': 'no-repeat'
                         };
                     case "video":
                         return {
-                            'background-image': "url(" + obj.picture + ")",
+                            'background-image': "url(" + obj.previewUrl + ")",
                             'background-size': '100%'
                         };
                     case "notebook": return {
