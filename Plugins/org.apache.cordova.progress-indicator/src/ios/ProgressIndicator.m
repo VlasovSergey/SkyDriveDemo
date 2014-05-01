@@ -28,41 +28,72 @@
 
 - (void)show:(CDVInvokedUrlCommand*)command
 {
-    if(self.progressBar != NULL) return;
-    BOOL boolValue = [[command.arguments objectAtIndex:0] boolValue];
-    NSString *stringColor = [command.arguments objectAtIndex:2];
-    UIColor *color;
-    NSUInteger red, green, blue;
-    @try {
-        sscanf([stringColor UTF8String], "#%02X%02X%02X", &red, &green, &blue);
-        color = [UIColor colorWithRed:red green:green blue:blue alpha:1];
-    }
-    @catch (NSException * e) {}
+	@try {
+		if(self.progressBar != NULL) {
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK ];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
+        
+		BOOL boolValue = [[command.arguments objectAtIndex:0] boolValue];
+        self.progressBar = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        if ([command.arguments objectAtIndex:2] != nil) {
+            NSString *stringColor = [command.arguments objectAtIndex:2];
+            UIColor *color;
+            NSUInteger red, green, blue;
+            @try {
+                sscanf([stringColor UTF8String], "#%02X%02X%02X", &red, &green, &blue);
+                color = [UIColor colorWithRed:red green:green blue:blue alpha:1];
+                self.progressBar.color = color;
+            }
+            @catch (NSException * e) {
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: @"Color string invalid."];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            }
+        }
+		
+		[self.webView.superview.superview addSubview:self.progressBar];
+		self.progressBar.center = self.webView.superview.superview.center;
+		
 
-    self.progressBar = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    [self.webView.superview.superview addSubview:self.progressBar];
-    self.progressBar.center = self.webView.superview.superview.center;
-    self.progressBar.color = color;
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.webView.userInteractionEnabled = !boolValue;
-            [self.progressBar startAnimating];
-        });
-    });
-    
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+			dispatch_async(dispatch_get_main_queue(), ^{
+				self.webView.userInteractionEnabled = !boolValue;
+				[self.progressBar startAnimating];
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: @""];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+			});
+		});
+	}
+	@catch (NSException * e) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: e.reason];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+	}    
 }
 
 - (void)hide:(CDVInvokedUrlCommand*)command
 {
-    if(self.progressBar == NULL) return;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.progressBar stopAnimating];
-            self.webView.userInteractionEnabled = true;
-            self.progressBar = NULL;
-        });
-    });
+	@try {
+		if(self.progressBar == NULL){
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: @""];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            return;
+        }
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+			dispatch_async(dispatch_get_main_queue(), ^{
+				[self.progressBar stopAnimating];
+				self.webView.userInteractionEnabled = true;
+				self.progressBar = NULL;
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: @""];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+			});
+		});
+	}
+	@catch (NSException * e) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: e.reason];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+     
+	}
     
 }
 
