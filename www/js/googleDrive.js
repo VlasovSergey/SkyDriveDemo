@@ -43,6 +43,62 @@ function GoogleDriveManager(_clientId, _redirectUri) {
             }
         },
 
+        sanitizeReponseData = function (response) {
+
+            response.items.forEach(function (item) {
+
+                if (item.mimeType == 'application/vnd.google-apps.folder') {
+                    item.type = 'folder';
+                    // Require separate request to count child items
+                    //item.count = ""; // Just stub
+                } else {
+                    item.type = 'file';
+                }
+
+                item.updated_time = item.updated_time || item.modifiedDate;
+                // Dont work, item size did not shown in interface
+                item.size = item.size || item.fileSize;
+                item.name = item.name || item.title;
+                // TODO: try exportLinks property
+                //item.source = item.source || item.downloadUrl;
+
+                //
+            });
+        },
+
+        doLoad = function(url) {
+            var deferred = q.defer();
+            http({
+                    method: 'GET',
+                    url: url
+                }
+            ).success(
+                    function (response) {
+                        response = JSON.parse(response.substring(response.indexOf('JSONP(')+6, response.length - 2 ));
+                        if(response.error && response.error.code == "401") {
+                            accessToken = null;
+                            this.signIn().then(function() {
+                                generateURLs();
+                                doLoad.call(this, url.replace(/access_token=.*/, accessToken)).then(
+                                    function(items) {
+                                        deferred.resolve(items);
+                                    },
+                                    function() {
+                                        deferred.reject();
+                                    }
+                                );
+                            });
+                        } else {
+                            sanitizeReponseData(response);
+                            deferred.resolve(response.items);
+                        }
+                    }.bind(this)
+                ).error(function (e) {
+                    deferred.resolve([]);
+                });
+            return deferred.promise;
+        },
+
         createDirectoryForPath = function (path, fileSystem) {
             var dirArgs = path.split('/'),
                 tmpPath = dirArgs[0],
@@ -66,8 +122,8 @@ function GoogleDriveManager(_clientId, _redirectUri) {
         generateURLs = function () {
             userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&" + accessToken;
             filesUrlForDirectory = "https://www.googleapis.com/drive/v2/files?" +
-                "q='%folderID%'%20in%20parents%20and%20(trashed%20=%20false)&" + accessToken;
-            filesUrlForRootDirectory = "https://www.googleapis.com/drive/v2/files?" + accessToken;
+                "q='%folderID%'%20in%20parents%20and%20(trashed%20=%20false)&callback=JSONP&" + accessToken;
+            filesUrlForRootDirectory = "https://www.googleapis.com/drive/v2/files?callback=JSONP&" + accessToken;
             singOutUrl = "https://accounts.google.com/logout?" ;
             signInUrl = "https://accounts.google.com/o/oauth2/auth?" +
                 "client_id=" + clientId +
@@ -76,7 +132,7 @@ function GoogleDriveManager(_clientId, _redirectUri) {
                 "&state=redirect_type=auth" +
                 "&redirect_uri=" + redirectUri;
 
-            searchUrl = "https://www.googleapis.com/drive/v2/files?" +
+            searchUrl = "https://www.googleapis.com/drive/v2/files?callback=JSONP&" +
                 "q=title%20contains%20'" + nameSearch + "'&" + accessToken;
         };
 
@@ -118,29 +174,29 @@ function GoogleDriveManager(_clientId, _redirectUri) {
 
         signIn: function (onSuccess) {
             ProgressIndicator.hide();
-            var inAppBrowser = window.open(signInUrl, '_blank', 'location=no');
-            deferred = q.defer();
-            ProgressIndicator.show(true);
+            var deferred = q.defer();
+            if (!accessToken) {
+                var inAppBrowser = window.open(signInUrl, '_blank', 'location=no');
+                ProgressIndicator.show(true);
 
-            inAppBrowser.addEventListener('loadstop', function (e) {
-                ProgressIndicator.hide();
-            });
+                inAppBrowser.addEventListener('loadstop', function (e) {
+                    ProgressIndicator.hide();
+                });
 
-            inAppBrowser.addEventListener('loadstart', function (e) {
-                //alert('start url='+e.url);
-                if (e.url.indexOf("access_token=") > 0) {
-                    accessToken = getAccessTokenFromURL(e.url);
-                    deferred.resolve(accessToken);
-                    inAppBrowser.close();
-                }
-            });
+                inAppBrowser.addEventListener('loadstart', function (e) {
+                    if (e.url.indexOf("access_token=") > 0) {
+                        accessToken = getAccessTokenFromURL(e.url);
+                        deferred.resolve(accessToken);
+                        inAppBrowser.close();
+                    }
+                });
 
-            inAppBrowser.addEventListener('exit', function (e) {
-                if (!accessToken) {
-                    deferred.reject();
-                }
-            });
-
+                inAppBrowser.addEventListener('exit', function (e) {
+                    deferred.reject(accessToken);
+                });
+            } else {
+                deferred.resolve(accessToken);
+            }
             return deferred.promise;
         },
 
@@ -175,64 +231,22 @@ function GoogleDriveManager(_clientId, _redirectUri) {
             if(!accessToken) {
                 deferred.resolve([])
             } else {
-                http({
-                    method: 'GET',
-                    url: searchUrl
-                }
-                ).success(
-                    function (response) {
-                        me.sanitizeReponseData(response);
-                        deferred.resolve(response.items);
-                    }).error( function (e) {
-                        console.log(JSON.stringify(e));
-                        deferred.resolve([]);
-                    });
+                doLoad.call(this, searchUrl).then(
+                    function(searchResult) {
+                        deferred.resolve(searchResult);
+                    },
+                    function() {
+                        deferred.reject();
+                    }
+                );
             }
             return deferred.promise;
         },
 
-        sanitizeReponseData: function (response) {
-
-            response.items.forEach(function (item) {
-
-                if (item.mimeType == 'application/vnd.google-apps.folder') {
-                    item.type = 'folder';
-                    // Require separate request to count child items
-                    //item.count = ""; // Just stub
-                } else {
-                    item.type = 'file';
-                }
-
-                item.updated_time = item.updated_time || item.modifiedDate;
-                // Dont work, item size did not shown in interface
-                item.size = item.size || item.fileSize;
-                item.name = item.name || item.title;
-                // TODO: try exportLinks property
-                //item.source = item.source || item.downloadUrl;
-
-                //
-            });
-        
-        },
-
         loadFilesData: function (request) {
-            var deferred = q.defer();
+            //var deferred = q.defer();
             var url = filesUrlForDirectory.replace("%folderID%", request || ROOT_DIRECTORY);
-            var me = this;
-
-            http({
-                method: 'GET',
-                url: url
-            }).success(
-                function (response) {
-                    me.sanitizeReponseData(response);
-
-                    deferred.resolve(response.items);
-                }).error(function (e) {
-                    console.log(JSON.stringify(e));
-                    deferred.resolve([]);
-                });
-            return deferred.promise;
+            return doLoad.call(this, url);
         },
 
         loadUserInfo: function () {
