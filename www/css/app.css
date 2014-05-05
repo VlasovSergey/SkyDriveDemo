@@ -21,8 +21,9 @@ body {
 }
 
 .find{
-    margin-top: 0;
     background-color: #000000;
+    width: 100%;
+    position: absolute;
     color: black;
 }
 
