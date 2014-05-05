@@ -44,9 +44,10 @@ function OneDriveManager(_clientId, _redirectUri) {
                     if(response.error && response.error.code == "request_token_invalid") {
                         accessToken = null;
                         this.signIn().then(function() {
-                            doLoad(url).then(
-                                function(){
-                                    deferred.resolve(response.data);
+                            generateURLs();
+                            doLoad(url.replace(/access_token=.*/, accessToken)).then(
+                                function(data) {
+                                    deferred.resolve(data);
                                 },
                                 function() {
                                     deferred.reject();
@@ -65,12 +66,10 @@ function OneDriveManager(_clientId, _redirectUri) {
                                 item.previewUrl = getPreviewUrl(item.id);
                             }
                         });
+                        deferred.resolve(response.data);
                     }
-
-                    deferred.resolve(response.data);
                 }.bind(this)
                 ).error(function (e) {
-                    console.log(JSON.stringify(e));
                     deferred.resolve([]);
                 });
             return deferred.promise;
@@ -123,6 +122,7 @@ function OneDriveManager(_clientId, _redirectUri) {
             signInUrl = "https://login.live.com/oauth20_authorize.srf?client_id=" + clientId + "&display=touch&locale=en&response_type=token&scope=wl.skydrive&state=redirect_type=auth&display=touch&redirect_uri=x-wmapp0%253Awww%252Findex.html&response_method=url&secure_cookie=false&redirect_uri=" + redirectUri;
             searchUrl = "https://apis.live.net/v5.0/me/skydrive/search?q=" + nameSearch + "&method=GET&interface_method=undefined&pretty=false&return_ssl_resources=false&x_http_live_library=Web%2Fchrome_5.5&suppress_redirects=true&callback=JSONP&"+accessToken;
         };
+
     clientId = _clientId;
     redirectUri = _redirectUri;
     //accessToken = getAccessTokenFromURL();

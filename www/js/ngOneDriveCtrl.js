@@ -205,6 +205,7 @@
 
                 driveManager.loadFilesData(folderId).then(
                     function (data) {
+                        console.log('data='+data);
                         addDownloadState(data);
                         scope.filesAndFolders = data;
 
@@ -227,9 +228,14 @@
                 );
             };
 
+            /*scope.check = function() {
+                driveManager.setAccessToken('access_token=asdasd');
+                console.log('accessToken='+ driveManager.getAccessToken());
+            };*/
+
             scope.doSearch = function() {
                 doSearch();
-            }
+            };
 
             scope.StartLogin = function(storage) {
                 run(storage);
