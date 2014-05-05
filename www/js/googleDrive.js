@@ -73,29 +73,32 @@ function GoogleDriveManager(_clientId, _redirectUri) {
                     url: url
                 }
             ).success(
-                    function (response) {
-                        response = JSON.parse(response.substring(response.indexOf('JSONP(')+6, response.length - 2 ));
-                        if(response.error && response.error.code == "401") {
-                            accessToken = null;
-                            this.signIn().then(function() {
-                                generateURLs();
-                                doLoad.call(this, url.replace(/access_token=.*/, accessToken)).then(
-                                    function(items) {
-                                        deferred.resolve(items);
-                                    },
-                                    function() {
-                                        deferred.reject();
-                                    }
-                                );
-                            });
-                        } else {
-                            sanitizeReponseData(response);
-                            deferred.resolve(response.items);
-                        }
-                    }.bind(this)
-                ).error(function (e) {
-                    deferred.resolve([]);
-                });
+                function (response) {
+                    response = JSON.parse(response.substring(response.indexOf('JSONP(')+6, response.length - 2 ));
+                    if(response.error && response.error.code == "401") {
+                        accessToken = null;
+                        this.signIn().then(function() {
+                            generateURLs();
+                            doLoad.call(this, url.replace(/access_token=.*/, accessToken)).then(
+                                function(items) {
+                                    deferred.resolve(items);
+                                },
+                                function() {
+                                    deferred.reject();
+                                }
+                            );
+                        });
+                    } else {
+                        sanitizeReponseData(response);
+                        response.items.sort(function(a, b) {
+                            return (b.type == 'folder') - (a.type == 'folder');
+                        });
+                        deferred.resolve(response.items);
+                    }
+                }.bind(this)
+            ).error(function (e) {
+                deferred.resolve([]);
+            });
             return deferred.promise;
         },
 
