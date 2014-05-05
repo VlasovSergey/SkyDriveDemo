@@ -6,10 +6,12 @@
     "config_munge": {
         "res/xml/config.xml": {
             "/*": {
-                "<feature name=\"File\"><param name=\"android-package\" value=\"org.apache.cordova.file.FileUtils\" /></feature>": 1,
+                "<feature name=\"FileOpener\"><param name=\"android-package\" value=\"com.phonegap.plugins.fileopener.FileOpener\" /></feature>": 1,
+                "<feature name=\"File\"><param name=\"android-package\" value=\"org.apache.cordova.file.FileUtils\" /><param name=\"onload\" value=\"true\" /></feature>": 1,
                 "<feature name=\"BackgroundDownload\"><param name=\"android-package\" value=\"org.apache.cordova.backgroundDownload.BackgroundDownload\" /></feature>": 1,
+                "<feature name=\"Device\"><param name=\"android-package\" value=\"org.apache.cordova.device.Device\" /></feature>": 1,
                 "<feature name=\"InAppBrowser\"><param name=\"android-package\" value=\"org.apache.cordova.inappbrowser.InAppBrowser\" /></feature>": 1,
-                "<feature name=\"FileOpener\"><param name=\"android-package\" value=\"com.phonegap.plugins.fileopener.FileOpener\" /></feature>": 1
+                "<feature name=\"ProgressIndicator\"><param name=\"android-package\" value=\"org.apache.cordova.progressIndicator.ProgressIndicator\" /></feature>": 1
             }
         },
         "AndroidManifest.xml": {
@@ -19,13 +21,19 @@
         }
     },
     "installed_plugins": {
+        "com.phonegap.plugins.fileopener": {
+            "PACKAGE_NAME": "akvelon.cordova.oneDriveDemoApp"
+        },
         "org.apache.cordova.background-download": {
+            "PACKAGE_NAME": "akvelon.cordova.oneDriveDemoApp"
+        },
+        "org.apache.cordova.device": {
             "PACKAGE_NAME": "akvelon.cordova.oneDriveDemoApp"
         },
         "org.apache.cordova.inappbrowser": {
             "PACKAGE_NAME": "akvelon.cordova.oneDriveDemoApp"
         },
-        "com.phonegap.plugins.fileopener": {
+        "org.apache.cordova.progress-indicator": {
             "PACKAGE_NAME": "akvelon.cordova.oneDriveDemoApp"
         }
     },

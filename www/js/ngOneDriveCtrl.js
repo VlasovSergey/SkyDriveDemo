@@ -9,6 +9,7 @@
         http,
         q,
         driveManager,
+        accessTokenDb,
         dataBase,
         directoryIds = [],
 
@@ -46,33 +47,53 @@
             scope.displayFolder(directoryToLoad, "backward");
         },
 
-        doSearch = function() {
-            var search =  $("#searchField").val();
+        doSearch = function(searchVal) {
+            var search = searchVal ? searchVal : $("#searchField").val();
+
             scope.showSignInButton = false;
             //if(search == ""){ return }
             ProgressIndicator.show(true);
             scope.search = true;
+            var oneDrive = StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE),
+                googleDrive = StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE);
 
-            StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).fileSearch(search).then(
+            oneDrive.fileSearch(search).then(
                 function (oneDriveFiles) {
                     console.log('OneDrive: search completed');
 
                     addDownloadState(oneDriveFiles);
 
-                    StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).fileSearch(search).then(
+                    googleDrive.fileSearch(search).then(
                         function (googleDriveFiles) {
                             console.log('GoogleDrive: search completed');
                             scope.filesAndFolders = oneDriveFiles.concat(googleDriveFiles);
 
                             ProgressIndicator.hide();
                             updateStateOfDb();
+                        },
+                        function(error){
+                            if(error.code == googleDrive.TOKEN_INVALID_CODE) {
+                                googleDrive.signIn().then(
+                                    function() {
+                                        doSearch(search);
+                                    }
+                                );
+                            }
                         }
                     );
                 },
-                function() {
-                    ProgressIndicator.hide();
-                    scope.search = false;
-                    scope.showSignInButton = true;
+                function(error) {
+                    if(error.code == oneDrive.TOKEN_INVALID_CODE) {
+                        oneDrive.signIn().then(
+                            function(accessToken) {
+                                doSearch(search);
+                            }
+                        );
+                    } else {
+                        ProgressIndicator.hide();
+                        scope.search = false;
+                        scope.showSignInButton = true;
+                    }
                 }
             ).error(function (ex) {
                 //TODO
@@ -153,7 +174,14 @@
             scope.showSignInButton = false;
 
             driveManager.signIn().then(
-                function () {
+                function (accessToken) {
+                    console.log(accessToken);
+                    /*accessTokenDb.addItem(
+                        {
+                            drive: driveManager.DRIVE_NAME,
+                            token: accessToken
+                        }
+                    );*/
                     ProgressIndicator.show(true);
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
@@ -185,6 +213,30 @@
                     if(!ProgressIndicator.isShow) toPreFolder();
                 }, false);
 
+            DbManager.getDataBase("AceesTokens", "tokens", 'drive', ['token'], function(db) {
+                console.log('db created ');
+                accessTokenDb = db;
+                db.readItem('onedrive', function(accessToken){
+                    if (accessToken) {
+                        getOneDriveInstance($q, $http).setAccessToken(accessToken);
+                    }
+                });
+                db.readItem('googledrive', function(accessToken){
+                    if (accessToken) {
+                        getGoogleDriveInstance($q, $http).setAccessToken(accessToken);
+                    }
+                });
+                db.addItem({drive:'asda', token:'asdasd'},
+                    function(){
+                        console.log('add ok');
+                    },
+                    function(){
+                        console.log('add error');
+                    }
+
+                );
+                console.log('db created');
+            });
 
             scope.directory = ROOT_TITLE;
             scope.showSignInButton = true;
@@ -197,7 +249,6 @@
 
                 driveManager.loadFilesData(folderId).then(
                     function (data) {
-                        console.log('data='+data);
                         addDownloadState(data);
                         scope.filesAndFolders = data;
 
@@ -214,16 +265,23 @@
                         updateStateOfDb();
                         ProgressIndicator.hide();
                     },
-                    function() {
+                    function(error) {
+                        if(error.code == driveManager.TOKEN_INVALID_CODE) {
+                            driveManager.signIn().then(
+                                function() {
+                                    scope.displayFolder(folder, direction);
+                                }
+                            );
+                        }
                         ProgressIndicator.hide();
                     }
                 );
             };
 
-            /*scope.check = function() {
+            scope.check = function() {
                 driveManager.setAccessToken('access_token=asdasd');
                 console.log('accessToken='+ driveManager.getAccessToken());
-            };*/
+            };
 
             scope.doSearch = function() {
                 doSearch();
@@ -237,7 +295,10 @@
                 driveManager.signOut().then(
                     function() {
                         driveManager.setAccessToken(null);
+                        accessTokenDb.remove(driveManager.DRIVE_NAME);
+
                         if(StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
+
                             scope.driveManager = false;
                         }
                         scope.filesAndFolders = null;

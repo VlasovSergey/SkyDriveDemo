@@ -6,6 +6,8 @@
 
 function OneDriveManager(_clientId, _redirectUri) {
     var ROOT_DIRECTORY = "me/skydrive",
+        TOKEN_INVALID_CODE = "request_token_invalid",
+        DRIVE_NAME = 'onedrive',
         accessToken,
         userInfoUrl ,
         filesUrlForDirectory,
@@ -20,27 +22,18 @@ function OneDriveManager(_clientId, _redirectUri) {
 
         doLoad = function(url) {
             var deferred = q.defer();
-
             http({
                     method: 'GET',
                     url: url
                 }
             ).success(
                 function (response) {
-                    response = JSON.parse(response.substring(6, response.length - 2 ));
-                    if(response.error && response.error.code == "request_token_invalid") {
-                        accessToken = null;
-                        this.signIn().then(function() {
-                            generateURLs();
-                            doLoad(url.replace(/access_token=.*/, accessToken)).then(
-                                function(data) {
-                                    deferred.resolve(data);
-                                },
-                                function() {
-                                    deferred.reject();
-                                }
-                            );
-                        });
+                    response = JSON.parse(response.substring(response.indexOf('JSONP(')+6, response.length - 2 ));
+                    if(response.error) {
+                        if(response.error.code = TOKEN_INVALID_CODE) {
+                            accessToken = null;
+                        }
+                        deferred.reject(response.error);
                     } else {
                         response.data.forEach(function(item) {
                             if (item.type == 'album') {
@@ -116,6 +109,9 @@ function OneDriveManager(_clientId, _redirectUri) {
     generateURLs();
 
     return {
+        DRIVE_NAME: DRIVE_NAME,
+        TOKEN_INVALID_CODE: TOKEN_INVALID_CODE,
+
         setAccessToken: function(aToken) {
             accessToken = aToken;
             generateURLs();
@@ -161,6 +157,7 @@ function OneDriveManager(_clientId, _redirectUri) {
                 inAppBrowser.addEventListener('loadstart', function (e) {
                     if (e.url.indexOf("access_token=") > 0) {
                         accessToken = getAccessTokenFromURL(e.url);
+                        generateURLs();
                         deferred.resolve(accessToken);
                         inAppBrowser.close();
                     }
@@ -212,8 +209,8 @@ function OneDriveManager(_clientId, _redirectUri) {
                     function(searchResult) {
                         deferred.resolve(searchResult);
                     },
-                    function() {
-                        deferred.reject();
+                    function(error) {
+                        deferred.reject(error);
                     }
                 );
             }

@@ -5,6 +5,8 @@
 function GoogleDriveManager(_clientId, _redirectUri) {
 
     var ROOT_DIRECTORY = "root",
+        DRIVE_NAME = "googledrive",
+        TOKEN_INVALID_CODE = "401",
         accessToken,
         userInfoUrl,
         filesUrlForDirectory,
@@ -62,19 +64,11 @@ function GoogleDriveManager(_clientId, _redirectUri) {
             ).success(
                 function (response) {
                     response = JSON.parse(response.substring(response.indexOf('JSONP(')+6, response.length - 2 ));
-                    if(response.error && response.error.code == "401") {
-                        accessToken = null;
-                        this.signIn().then(function() {
-                            generateURLs();
-                            doLoad.call(this, url.replace(/access_token=.*/, accessToken)).then(
-                                function(items) {
-                                    deferred.resolve(items);
-                                },
-                                function() {
-                                    deferred.reject();
-                                }
-                            );
-                        });
+                    if(response.error) {
+                        if(response.error.code = TOKEN_INVALID_CODE) {
+                            accessToken = null;
+                        }
+                        deferred.reject(response.error);
                     } else {
                         sanitizeReponseData(response);
                         response.items.sort(function(a, b) {
@@ -131,6 +125,10 @@ function GoogleDriveManager(_clientId, _redirectUri) {
     generateURLs();
 
     return {
+        DRIVE_NAME: DRIVE_NAME,
+        TOKEN_INVALID_CODE: TOKEN_INVALID_CODE,
+
+
         setAccessToken: function (aToken) {
             accessToken = aToken;
             generateURLs();
