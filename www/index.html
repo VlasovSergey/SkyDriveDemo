@@ -16,6 +16,7 @@
     <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
 </head>
 <body ng-controller="ngCloudDriveCtrl"  ontouchstart="" >
+    <!--<button class="btn" ng-click="check()" ></button>-->
     <div ng-if='showSignInButton' class="loginPnel" >
         <button type="button" ng-click="StartLogin('onedrive')" class="btn btn-primary loginButton" role="button" >OneDrive</button>
         <button type="button" ng-click="StartLogin('googledrive')" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
@@ -36,8 +37,9 @@
     </div>
     <div id="id" class="container" >
         <div class="panel container" ng-if="filesAndFolders!=null" >
-            <h1>{{directory}}</h1>
-            <div class="items" ng-repeat="obj in filesAndFolders |  filter: obj.type " >
+            <h1 ng-if="!search" >{{directory}}</h1>
+            <h1 ng-if="search">Search result</h1>
+            <div class="items" ng-repeat="obj in filesAndFolders " >
                 <div tabindex="0" class="panel panel-body item" ng-click="displayFolder(obj, 'forward')" >
                     <div class="item-div" style="height: 100%; width:100%"></div>
                     <div>
@@ -46,7 +48,7 @@
                         </div>
                         <h2 class="clip">{{obj.name}}</h2>
                         <h3 class="masthead-lead">{{generateDateTime(obj.updated_time)}}</h3>
-                        <h3 class="masthead-lead">{{obj.size}} byte</h3>
+                        <h3 class="masthead-lead" ng-if="obj.size" >{{obj.size}} byte</h3>
                     </div>
                     <div ng-if="(obj.type!='folder') && (obj.type!='album')" class="buttonsBar" >
                         <div ng-if="obj.state == 2" class="progress active" >
