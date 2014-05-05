@@ -2,19 +2,6 @@
  * Created by sergey.vlasov on 2/18/14.
  */
 
-window.getGoogleDriveInstance = function (http, q) {
-
-    var GOOGLEDRIVE_CLIENT_ID = "608994791757-mnhak64khir5gggp6328bbn6tovclmc9.apps.googleusercontent.com",
-        GOOGLEDRIVE_REDIRECT_URI = "https://www.example.com/oauth2callback";
-
-    if (!window.__googleDrive) {
-        window.__googleDrive = new GoogleDriveManager(GOOGLEDRIVE_CLIENT_ID, GOOGLEDRIVE_REDIRECT_URI);
-        window.__googleDrive.onControllerCreated(http, q);
-    }
-
-    return window.__googleDrive;
-}
-
 function GoogleDriveManager(_clientId, _redirectUri) {
 
     var ROOT_DIRECTORY = "root",
@@ -216,7 +203,7 @@ function GoogleDriveManager(_clientId, _redirectUri) {
             return deferred.promise;
         },
 
-        onControllerCreated: function ($http, $q) {
+        initialize: function ($http, $q) {
             http = $http;
             q = $q;
         },

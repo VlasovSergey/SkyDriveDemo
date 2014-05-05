@@ -53,13 +53,13 @@
             ProgressIndicator.show(true);
             scope.search = true;
 
-            window.getOneDriveInstance(http, q).fileSearch(search).then(
+            StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).fileSearch(search).then(
                 function (oneDriveFiles) {
                     console.log('OneDrive: search completed');
 
                     addDownloadState(oneDriveFiles);
 
-                    window.getGoogleDriveInstance(http, q).fileSearch(search).then(
+                    StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).fileSearch(search).then(
                         function (googleDriveFiles) {
                             console.log('GoogleDrive: search completed');
                             scope.filesAndFolders = oneDriveFiles.concat(googleDriveFiles);
@@ -147,17 +147,9 @@
         },
 
         run = function (storage) {
-            switch (storage) {
-                case 'onedrive':
-                    driveManager = window.getOneDriveInstance();
-                    break;
+            StorageManager.initialize(http, q);
+            driveManager = StorageManager.getStorageInstance(storage);
 
-                case 'googledrive':
-                    driveManager = window.getGoogleDriveInstance();
-                    break;
-            }
-
-            driveManager.onControllerCreated(http, q);
             scope.showSignInButton = false;
 
             driveManager.signIn().then(
@@ -245,7 +237,7 @@
                 driveManager.signOut().then(
                     function() {
                         driveManager.setAccessToken(null);
-                        if(window.getOneDriveInstance().getAccessToken() == null && window.getGoogleDriveInstance().getAccessToken() == null) {
+                        if(StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
                             scope.driveManager = false;
                         }
                         scope.filesAndFolders = null;
