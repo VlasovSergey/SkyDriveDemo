@@ -38,6 +38,7 @@
             } else if (scope.directory == ROOT_TITLE || scope.search) {
                 scope.filesAndFolders = null;
                 scope.showSignInButton = true;
+                scope.search = false;
                 scope.$apply();
                 return;
             }
