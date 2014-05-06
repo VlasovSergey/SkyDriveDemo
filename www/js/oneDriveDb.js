@@ -1,16 +1,17 @@
 /**
  * Created by sergey.vlasov on 3/3/14.*/
 (function(){
-    var OneDriveDB = function(DB,tablename) {
+    var OneDriveDB = function(DB,tablename, _keyPath) {
         var db = DB,
             tableName = tablename,
+            keyPath = _keyPath,
             getObjectStore = function(){
                 return  db.transaction([tableName], "readwrite").objectStore(tableName);
             },
             addItem = function(data, onsuccess, onerror) {
-                readItem(data.id, function(fileData){
+                readItem(data[keyPath], function(fileData){
                     if (fileData){
-                        replaceItem(data.id,data)
+                        replaceItem(data[keyPath], data)
                     } else {
                         var transaction = db.transaction([tableName], "readwrite"),
                             objectStore = transaction.objectStore(tableName),
@@ -62,12 +63,12 @@
                     });
                 };
             idbRequest.onsuccess = function(event){
-                onSuccess(new OneDriveDB(event.target.result, tableName));
+                onSuccess(new OneDriveDB(event.target.result, tableName, keyPath));
             }
         },
 
         deleteDB : function(nameDB) {
-            indexedDB.deleteDatabase(nameDB);
+                indexedDB.deleteDatabase(nameDB);
             }
         };
 }());
