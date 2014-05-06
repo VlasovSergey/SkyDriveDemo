@@ -20,6 +20,10 @@ function GoogleDriveManager(clientId, redirectUri) {
                 } else {
                     item.type = 'file';
                 }
+                if (item.downloadUrl) {
+                    console.log(item.downloadUrl);
+                    item.source = item.downloadUrl + "&" + storage.getAccessToken();
+                }
 
                 item.updated_time = item.updated_time || item.modifiedDate;
                 // Dont work, item size did not shown in interface
