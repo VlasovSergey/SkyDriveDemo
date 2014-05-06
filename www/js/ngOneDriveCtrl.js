@@ -72,7 +72,7 @@
                             updateStateOfDb();
                         },
                         function(error){
-                            if(error.code == googleDrive.TOKEN_INVALID_CODE) {
+                            if(error.code == googleDrive.getInvalidTokenErrorCode()) {
                                 googleDrive.signIn().then(
                                     function() {
                                         doSearch(search);
@@ -83,7 +83,7 @@
                     );
                 },
                 function(error) {
-                    if(error.code == oneDrive.TOKEN_INVALID_CODE) {
+                    if(error.code == oneDrive.getInvalidTokenErrorCode()) {
                         oneDrive.signIn().then(
                             function(accessToken) {
                                 doSearch(search);
@@ -178,7 +178,7 @@
                     console.log(accessToken);
                     /*accessTokenDb.addItem(
                         {
-                            drive: driveManager.DRIVE_NAME,
+                            drive: driveManager.getStorageName(),
                             token: accessToken
                         }
                     );*/
@@ -266,7 +266,7 @@
                         ProgressIndicator.hide();
                     },
                     function(error) {
-                        if(error.code == driveManager.TOKEN_INVALID_CODE) {
+                        if(error.code == driveManager.getInvalidTokenErrorCode()) {
                             driveManager.signIn().then(
                                 function() {
                                     scope.displayFolder(folder, direction);
@@ -295,7 +295,7 @@
                 driveManager.signOut().then(
                     function() {
                         driveManager.setAccessToken(null);
-                        accessTokenDb.remove(driveManager.DRIVE_NAME);
+                        accessTokenDb.remove(driveManager.getStorageName());
 
                         if(StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
 
