@@ -74,7 +74,13 @@
                         function(error){
                             if(error.code == googleDrive.getInvalidTokenErrorCode()) {
                                 googleDrive.signIn().then(
-                                    function() {
+                                    function(accessToken) {
+                                        accessTokenDb.addItem(
+                                            {
+                                                driveName: driveManager.DRIVE_NAME,
+                                                accessToken: accessToken
+                                            }
+                                        );
                                         doSearch(search);
                                     }
                                 );
@@ -86,6 +92,12 @@
                     if(error.code == oneDrive.getInvalidTokenErrorCode()) {
                         oneDrive.signIn().then(
                             function(accessToken) {
+                                accessTokenDb.addItem(
+                                    {
+                                        driveName: driveManager.DRIVE_NAME,
+                                        accessToken: accessToken
+                                    }
+                                );
                                 doSearch(search);
                             }
                         );
@@ -168,20 +180,18 @@
         },
 
         run = function (storage) {
-            StorageManager.initialize(http, q);
             driveManager = StorageManager.getStorageInstance(storage);
 
             scope.showSignInButton = false;
 
             driveManager.signIn().then(
                 function (accessToken) {
-                    console.log(accessToken);
-                    /*accessTokenDb.addItem(
+                    accessTokenDb.addItem(
                         {
-                            drive: driveManager.getStorageName(),
-                            token: accessToken
+                            driveName: driveManager.getStorageName(),
+                            accessToken: accessToken
                         }
-                    );*/
+                    );
                     ProgressIndicator.show(true);
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
@@ -208,34 +218,31 @@
             http = $http;
             q = $q;
 
+            StorageManager.initialize(http, q);
+
             document.addEventListener("backbutton",
                 function() {
                     if(!ProgressIndicator.isShow) toPreFolder();
                 }, false);
 
-            DbManager.getDataBase("AceesTokens", "tokens", 'drive', ['token'], function(db) {
-                console.log('db created ');
+            DbManager.getDataBase("AceesTokens", "tokens", 'driveName', ['accessToken'], function(db) {
                 accessTokenDb = db;
-                db.readItem('onedrive', function(accessToken){
-                    if (accessToken) {
-                        getOneDriveInstance($q, $http).setAccessToken(accessToken);
+                db.readItem(StorageManager.STORAGE_ONE_DRIVE, function(data) {
+                    if (data) {
+                        driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE);
+                        driveManager.setAccessToken(data.accessToken);
+                        scope.driveManager = true;
+                        scope.$apply();
                     }
                 });
-                db.readItem('googledrive', function(accessToken){
-                    if (accessToken) {
-                        getGoogleDriveInstance($q, $http).setAccessToken(accessToken);
+                db.readItem(StorageManager.STORAGE_GOOGLE_DRIVE, function(data) {
+                    if (data) {
+                        driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE);
+                        driveManager.setAccessToken(data.accessToken);
+                        scope.driveManager = true;
                     }
                 });
-                db.addItem({drive:'asda', token:'asdasd'},
-                    function(){
-                        console.log('add ok');
-                    },
-                    function(){
-                        console.log('add error');
-                    }
 
-                );
-                console.log('db created');
             });
 
             scope.directory = ROOT_TITLE;
@@ -268,7 +275,13 @@
                     function(error) {
                         if(error.code == driveManager.getInvalidTokenErrorCode()) {
                             driveManager.signIn().then(
-                                function() {
+                                function(accessToken) {
+                                    accessTokenDb.addItem(
+                                        {
+                                            driveName: driveManager.DRIVE_NAME,
+                                            accessToken: accessToken
+                                        }
+                                    );
                                     scope.displayFolder(folder, direction);
                                 }
                             );
@@ -278,10 +291,12 @@
                 );
             };
 
+/*
             scope.check = function() {
                 driveManager.setAccessToken('access_token=asdasd');
                 console.log('accessToken='+ driveManager.getAccessToken());
             };
+*/
 
             scope.doSearch = function() {
                 doSearch();
@@ -295,12 +310,12 @@
                 driveManager.signOut().then(
                     function() {
                         driveManager.setAccessToken(null);
-                        accessTokenDb.remove(driveManager.getStorageName());
+                        accessTokenDb.removeItem(driveManager.getStorageName());
 
                         if(StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
-
                             scope.driveManager = false;
                         }
+
                         scope.filesAndFolders = null;
                         ProgressIndicator.hide();
                         scope.showSignInButton = true;

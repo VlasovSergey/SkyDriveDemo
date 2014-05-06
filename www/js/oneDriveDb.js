@@ -9,9 +9,9 @@
                 return  db.transaction([tableName], "readwrite").objectStore(tableName);
             },
             addItem = function(data, onsuccess, onerror) {
-                readItem(data[keyPath], function(fileData){
+                readItem(data[keyPath], function(fileData) {
                     if (fileData){
-                        replaceItem(data[keyPath], data)
+                        replaceItem(data[keyPath], data, onsuccess, onerror)
                     } else {
                         var transaction = db.transaction([tableName], "readwrite"),
                             objectStore = transaction.objectStore(tableName),
