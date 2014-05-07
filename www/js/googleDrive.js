@@ -23,6 +23,9 @@ function GoogleDriveManager(clientId, redirectUri) {
 
                 if (item.downloadUrl) {
                     item.source = item.downloadUrl + "&" + storage.getAccessToken();
+                } else if (item.exportLinks) {
+                    item.source = item.exportLinks["application/vnd.openxmlformats-officedocument.wordprocessingml.document"] + "&" + storage.getAccessToken();
+                    item.title += ".docx";
                 }
 
                 item.updated_time = item.updated_time || item.modifiedDate;
