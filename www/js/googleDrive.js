@@ -4,7 +4,7 @@
 
 function GoogleDriveManager(clientId, redirectUri) {
     var ROOT_DIRECTORY = "root",
-        DRIVE_NAME = "googleDrive",
+        DRIVE_NAME = "GoogleDrive",
         TOKEN_INVALID_CODE = "401",
         signOutRedirectUrl = "https://accounts.google.com/ServiceLogin",
         signOutEvent = "loadstop",

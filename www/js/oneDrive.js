@@ -7,7 +7,7 @@
 function OneDriveManager(clientId, redirectUri) {
     var ROOT_DIRECTORY = "me/skydrive",
         TOKEN_INVALID_CODE = "request_token_invalid",
-        DRIVE_NAME = 'oneDrive',
+        DRIVE_NAME = 'OneDrive',
         signOutRedirectUrl = redirectUri,
         signOutEvent = "loadstart",
         storage = CloudStorage(clientId, redirectUri),

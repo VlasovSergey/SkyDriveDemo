@@ -15,8 +15,8 @@
         };
 
         ns.StorageManager = {
-            STORAGE_ONE_DRIVE : "oneDrive",
-            STORAGE_GOOGLE_DRIVE : "googleDrive",
+            STORAGE_ONE_DRIVE : "OneDrive",
+            STORAGE_GOOGLE_DRIVE : "GoogleDrive",
 
             initialize: function($http, $q) {
                 http = $http;

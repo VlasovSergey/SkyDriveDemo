@@ -1,7 +1,7 @@
 (function ngOneDriveCtrl() {
     'use strict';
     var controllerId = 'ngCloudDriveCtrl', // Controller name is handy for logging
-        ROOT_TITLE = 'Root directory',
+        rootTitle,
         DOWNLOADED_STATE = 1,
         NOT_DOWNLOADED_STATE = 0,
         PROGRESS_STATE = 2,
@@ -12,6 +12,11 @@
         accessTokenDb,
         dataBase,
         directoryIds = [],
+
+        setDriveDirrectory  = function(nameDir) {
+            rootTitle = nameDir;
+            scope.directory = nameDir;
+        },
 
         getFilesByParameter = function(parameter, value) {
             return scope.filesAndFolders.filter(
@@ -44,7 +49,7 @@
         toPreFolder = function () {
             if (scope.showSignInButton == true && navigator.app ) {
                 navigator.app.exitApp();
-            } else if (scope.directory == ROOT_TITLE || scope.search) {
+            } else if (scope.directory == rootTitle || scope.search) {
                 scope.filesAndFolders = null;
                 scope.showSignInButton = true;
                 scope.search = false;
@@ -191,6 +196,7 @@
 
         run = function (storage) {
             driveManager = StorageManager.getStorageInstance(storage);
+            setDriveDirrectory(storage);
             driveManager.signIn().then(
                 function (accessToken) {
                     ProgressIndicator.show(true);
@@ -247,7 +253,7 @@
 
             });
 
-            scope.directory = ROOT_TITLE;
+            scope.directory = rootTitle;
             scope.showSignInButton = true;
 
             scope.displayFolder = function (folder, direction) {
@@ -339,7 +345,7 @@
                 downloadFile(file);
             };
             
-            scope.toPreFolder = function(){
+            scope.toPreFolder = function() {
                 toPreFolder();
             };
 

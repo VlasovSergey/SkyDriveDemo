@@ -18,8 +18,8 @@
 <body ng-controller="ngCloudDriveCtrl"  ontouchstart="" >
     <!--<button class="btn" ng-click="check()" ></button>-->
     <div ng-if='showSignInButton' class="loginPnel" >
-        <button type="button" ng-click="StartLogin('oneDrive')" class="btn btn-primary loginButton" role="button" >OneDrive</button>
-        <button type="button" ng-click="StartLogin('googleDrive')" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
+        <button type="button" ng-click="StartLogin('OneDrive')" class="btn btn-primary loginButton" role="button" >OneDrive</button>
+        <button type="button" ng-click="StartLogin('GoogleDrive')" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
     </div>
     <h1 ng-if="driveManager && showSignInButton" class="panel find">
     <input class="textEdit"  class="pull-left" type="text" id="searchField"/> <button class="btnFind btn btn-primary pull-right" ng-click="doSearch()">find</button>
