@@ -18,6 +18,10 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
 
         processLoadedData,
 
+        getDataFromJSONP = function(jsonp) {
+            return JSON.parse(jsonp.substring(jsonp.indexOf('JSONP(')+6, jsonp.length - 2 ));
+        },
+
         doLoad = function(url) {
             var deferred = q.defer(),
                 result;
@@ -27,7 +31,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                 }
             ).success(
                 function (response) {
-                    response = JSON.parse(response.substring(response.indexOf('JSONP(')+6, response.length - 2 ));
+                    response = getDataFromJSONP(response);
                     if(response.error) {
                         if(response.error.code = TOKEN_INVALID_CODE) {
                             accessToken = null;
@@ -252,7 +256,15 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                     }
                 ).success(
                     function (userInfo) {
-                        deferred.resolve(userInfo);
+                        userInfo = getDataFromJSONP(userInfo);
+                        if(userInfo.error) {
+                            if(userInfo.error.code = TOKEN_INVALID_CODE) {
+                                accessToken = null;
+                            }
+                            deferred.reject(userInfo.error);
+                        } else {
+                            deferred.resolve(userInfo);
+                        }
                     }
                 );
                 return deferred.promise;

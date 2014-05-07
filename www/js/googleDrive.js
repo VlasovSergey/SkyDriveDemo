@@ -20,8 +20,8 @@ function GoogleDriveManager(clientId, redirectUri) {
                 } else {
                     item.type = 'file';
                 }
+
                 if (item.downloadUrl) {
-                    console.log(item.downloadUrl);
                     item.source = item.downloadUrl + "&" + storage.getAccessToken();
                 }
 
@@ -51,7 +51,7 @@ function GoogleDriveManager(clientId, redirectUri) {
             searchString = storage.getSearchString(),
             redirectUri = storage.getRedirectUri(),
 
-            userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&" + accessToken,
+            userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&callback=JSONP&" + accessToken,
             filesUrlForDirectory = "https://www.googleapis.com/drive/v2/files?q='%folderID%'%20in%20parents%20and%20(trashed%20=%20false)&callback=JSONP&" + accessToken,
             singOutUrl = "https://accounts.google.com/logout?",
             signInUrl = "https://accounts.google.com/o/oauth2/auth?" +

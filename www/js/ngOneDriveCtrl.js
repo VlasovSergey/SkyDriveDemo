@@ -20,6 +20,15 @@
                 });
         },
 
+        saveAccessTokenInDb = function(accessToken){
+            accessTokenDb.addItem(
+                {
+                    driveName: driveManager.getStorageName(),
+                    accessToken: accessToken
+                }
+            );
+        },
+
         addDownloadState = function(fileList) {
             fileList.forEach(function(fileInfo) {
                 if(fileInfo.type !== 'folder'){
@@ -76,12 +85,7 @@
                             if(error.code == googleDrive.getInvalidTokenErrorCode()) {
                                 googleDrive.signIn().then(
                                     function(accessToken) {
-                                        accessTokenDb.addItem(
-                                            {
-                                                driveName: driveManager.DRIVE_NAME,
-                                                accessToken: accessToken
-                                            }
-                                        );
+                                        saveAccessTokenInDb(accessToken);
                                         doSearch(search);
                                     }
                                 );
@@ -93,12 +97,7 @@
                     if(error.code == oneDrive.getInvalidTokenErrorCode()) {
                         oneDrive.signIn().then(
                             function(accessToken) {
-                                accessTokenDb.addItem(
-                                    {
-                                        driveName: driveManager.DRIVE_NAME,
-                                        accessToken: accessToken
-                                    }
-                                );
+                                saveAccessTokenInDb(accessToken);
                                 doSearch(search);
                             }
                         );
@@ -139,7 +138,7 @@
 
         downloadFile = function (file) {
             var onSuccess = function (filePath) {
-                var fileNew = getFilesByParameter('name', file.name)[0];
+                    var fileNew = getFilesByParameter('name', file.name)[0];
                     fileNew = fileNew?fileNew:file;
                     fileNew.startProgress = false;
                     fileNew.localPath = filePath;
@@ -180,28 +179,30 @@
             });
         },
 
+        startDrive = function(userInfo) {
+            scope.showSignInButton = false;
+            scope.driveManager = true;
+            DbManager.getDataBase(userInfo.id, "loadState", 'id', ['state', 'url', 'localPath'], function(db) {
+                dataBase = db;
+            });
+            scope.userName = userInfo.name;
+            scope.displayFolder();
+        },
+
         run = function (storage) {
             driveManager = StorageManager.getStorageInstance(storage);
-
-            scope.showSignInButton = false;
-
             driveManager.signIn().then(
                 function (accessToken) {
-                    accessTokenDb.addItem(
-                        {
-                            driveName: driveManager.getStorageName(),
-                            accessToken: accessToken
-                        }
-                    );
                     ProgressIndicator.show(true);
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
-                            scope.driveManager = true;
-                            DbManager.getDataBase(userInfo.id, "loadState", 'id', ['state', 'url', 'localPath'], function(db) {
-                                dataBase = db;
-                            });
-                            scope.userName = userInfo.name;
-                            scope.displayFolder();
+                            saveAccessTokenInDb(accessToken);
+                            startDrive(userInfo);
+                        },
+                        function(error) {
+                            if(error.code == driveManager.getInvalidTokenErrorCode()) {
+                                run(storage);
+                            }
                         }
                     );
                 },
@@ -213,7 +214,7 @@
                 }
             );
         },
-        
+
         onControllerCreated = function ($scope, $http, $q) {
             scope = $scope;
             http = $http;
@@ -277,12 +278,7 @@
                         if(error.code == driveManager.getInvalidTokenErrorCode()) {
                             driveManager.signIn().then(
                                 function(accessToken) {
-                                    accessTokenDb.addItem(
-                                        {
-                                            driveName: driveManager.DRIVE_NAME,
-                                            accessToken: accessToken
-                                        }
-                                    );
+                                    saveAccessTokenInDb(accessToken);
                                     scope.displayFolder(folder, direction);
                                 }
                             );
