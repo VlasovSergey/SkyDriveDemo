@@ -22,6 +22,7 @@
         <button type="button" ng-click="StartLogin('GoogleDrive')" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
     </div>
     <h1 ng-if="driveManager && showSignInButton" class="panel find">
+    <!--<h1 ng-if="driveManager && (showSignInButton || search)" class="panel find">-->
     <input class="textEdit"  class="pull-left" type="text" id="searchField"/> <button class="btnFind btn btn-primary pull-right" ng-click="doSearch()">find</button>
 	</h1>
     <div ng-if="filesAndFolders!=null" class="container user-info">
@@ -38,7 +39,8 @@
     <div id="id" class="container" >
         <div class="panel container" ng-if="filesAndFolders!=null" >
             <h1 ng-if="!search" >{{directory}}</h1>
-            <h1 ng-if="search">Search result</h1>
+            <h1 class="noSearchResult" ng-if="ShowNoSearchResult">No search result</h1>
+            <h1 ng-if="search && !ShowNoSearchResult">Search result</h1>
             <div class="items" ng-repeat="obj in filesAndFolders " >
                 <div tabindex="0" class="panel panel-body item" ng-click="displayFolder(obj, 'forward')" >
                     <div class="item-div" style="height: 100%; width:100%"></div>

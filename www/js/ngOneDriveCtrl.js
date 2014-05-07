@@ -50,6 +50,7 @@
             if (scope.showSignInButton == true && navigator.app ) {
                 navigator.app.exitApp();
             } else if (scope.directory == rootTitle || scope.search) {
+                scope.ShowNoSearchResult = false;
                 scope.filesAndFolders = null;
                 scope.showSignInButton = true;
                 scope.search = false;
@@ -82,7 +83,7 @@
                         function (googleDriveFiles) {
                             console.log('GoogleDrive: search completed');
                             scope.filesAndFolders = oneDriveFiles.concat(googleDriveFiles);
-
+                            scope.ShowNoSearchResult = !scope.filesAndFolders.length;
                             ProgressIndicator.hide();
                             updateStateOfDb();
                         },
@@ -253,6 +254,7 @@
 
             });
 
+            scope.ShowNoSearchResult = false;
             scope.directory = rootTitle;
             scope.showSignInButton = true;
 
@@ -328,7 +330,6 @@
             };
 
             scope.openFile = function (file) {
-
                 if (file.state == 1) {
                     window.plugins.fileOpener.open(file.localPath);
                     return;
