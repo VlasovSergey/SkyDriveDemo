@@ -76,7 +76,10 @@
             oneDrive.fileSearch(search).then(
                 function (oneDriveFiles) {
                     console.log('OneDrive: search completed');
-
+                    oneDriveFiles = oneDriveFiles.filter(
+                        function(obj) {
+                            return obj.type != 'folder';
+                        });
                     addDownloadState(oneDriveFiles);
 
                     googleDrive.fileSearch(search).then(
