@@ -252,6 +252,7 @@
                         driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE);
                         driveManager.setAccessToken(data.accessToken);
                         scope.driveManager = true;
+                        scope.$apply();
                     }
                 });
 
