@@ -85,6 +85,7 @@
                     googleDrive.fileSearch(search).then(
                         function (googleDriveFiles) {
                             console.log('GoogleDrive: search completed');
+                            addDownloadState(googleDriveFiles);
                             scope.filesAndFolders = oneDriveFiles.concat(googleDriveFiles);
                             scope.ShowNoSearchResult = !scope.filesAndFolders.length;
                             ProgressIndicator.hide();
