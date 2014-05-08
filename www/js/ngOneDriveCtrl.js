@@ -92,7 +92,7 @@
                             updateStateOfDb();
                         },
                         function(error){
-                            if(error.code == googleDrive.getInvalidTokenErrorCode()) {
+                            if(error && error.code == googleDrive.getInvalidTokenErrorCode()) {
                                 googleDrive.signIn().then(
                                     function(accessToken) {
                                         saveAccessTokenInDb(accessToken);
@@ -100,11 +100,12 @@
                                     }
                                 );
                             }
+                            ProgressIndicator.hide();
                         }
                     );
                 },
                 function(error) {
-                    if(error.code == oneDrive.getInvalidTokenErrorCode()) {
+                    if(error && error.code == oneDrive.getInvalidTokenErrorCode()) {
                         oneDrive.signIn().then(
                             function(accessToken) {
                                 saveAccessTokenInDb(accessToken);
@@ -117,13 +118,7 @@
                         scope.showSignInButton = true;
                     }
                 }
-            ).error(function (ex) {
-                //TODO
-                console.log('Error: ' + JSON.stringify(ex));
-                ProgressIndicator.hide();
-                scope.search = false;
-                scope.showSignInButton = true;
-            });
+            );
         },
 
         updateStateOfDb = function() {
@@ -211,9 +206,10 @@
                             startDrive(userInfo);
                         },
                         function(error) {
-                            if(error.code == driveManager.getInvalidTokenErrorCode()) {
+                            if(error && error.code == driveManager.getInvalidTokenErrorCode()) {
                                 run(storage);
                             }
+                            ProgressIndicator.hide();
                         }
                     );
                 },
@@ -288,7 +284,7 @@
                         ProgressIndicator.hide();
                     },
                     function(error) {
-                        if(error.code == driveManager.getInvalidTokenErrorCode()) {
+                        if(error && error.code == driveManager.getInvalidTokenErrorCode()) {
                             driveManager.signIn().then(
                                 function(accessToken) {
                                     saveAccessTokenInDb(accessToken);

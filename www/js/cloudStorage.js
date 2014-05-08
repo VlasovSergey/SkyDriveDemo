@@ -43,7 +43,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                     }
                 }.bind(this)
             ).error(function (e) {
-                    deferred.resolve([]);
+                    deferred.reject();
                 });
             return deferred.promise;
         },
@@ -266,7 +266,9 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                             deferred.resolve(userInfo);
                         }
                     }
-                );
+                ).error(function(e) {
+                    deferred.reject(e);
+                });
                 return deferred.promise;
             },
 
