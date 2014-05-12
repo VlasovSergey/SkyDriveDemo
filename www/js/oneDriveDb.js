@@ -53,7 +53,7 @@
 
     window.DbManager = window.DbManager || {
         getDataBase: function(nameDB, tableName, keyPath, parametersArray, onSuccess){
-            var idbRequest = indexedDB.open(nameDB, 2);
+            var idbRequest = indexedDB.open(nameDB);
             idbRequest.onupgradeneeded =
                 function(event) {
                     var db = event.target.result,
@@ -63,8 +63,13 @@
                     });
                 };
             idbRequest.onsuccess = function(event){
+                if (!event.target.result.objectStoreNames.contains(tableName)) {
+                    window.open('', '_blank', 'location=no').close();
+                    this.getDataBase(nameDB, tableName, keyPath, parametersArray, onSuccess);
+                    return
+                }
                 onSuccess(new OneDriveDB(event.target.result, tableName, keyPath));
-            }
+            }.bind(this)
         },
 
         deleteDB : function(nameDB) {

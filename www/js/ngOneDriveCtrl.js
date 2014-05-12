@@ -184,16 +184,6 @@
             });
         },
 
-        startDrive = function(userInfo) {
-            scope.showSignInButton = false;
-            scope.driveManager = true;
-            DbManager.getDataBase(userInfo.id, "loadState", 'id', ['state', 'url', 'localPath'], function(db) {
-                dataBase = db;
-            });
-            scope.userName = userInfo.name;
-            scope.displayFolder();
-        },
-
         run = function (storage) {
             driveManager = StorageManager.getStorageInstance(storage);
             setDriveDirrectory(storage);
@@ -202,8 +192,14 @@
                     ProgressIndicator.show(true);
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
-                            saveAccessTokenInDb(accessToken);
-                            startDrive(userInfo);
+                            DbManager.getDataBase(userInfo.id, "loadState", 'id', ['state', 'url', 'localPath'], function(db) {
+                                scope.showSignInButton = false;
+                                scope.driveManager = true;
+                                dataBase = db;
+                                scope.userName = userInfo.name;
+                                scope.displayFolder();
+                                saveAccessTokenInDb(accessToken);
+                            });
                         },
                         function(error) {
                             if(error && error.code == driveManager.getInvalidTokenErrorCode()) {
@@ -325,7 +321,7 @@
                         scope.filesAndFolders = null;
                         ProgressIndicator.hide();
                         scope.showSignInButton = true;
-                        scope.$apply();
+                        //scope.$apply();
                     }
                 );
             };
