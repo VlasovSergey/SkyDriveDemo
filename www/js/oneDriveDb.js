@@ -10,7 +10,7 @@
             },
             addItem = function(data, onsuccess, onerror) {
                 readItem(data[keyPath], function(fileData) {
-                    if (fileData){
+                    if (fileData) {
                         replaceItem(data[keyPath], data, onsuccess, onerror)
                     } else {
                         var transaction = db.transaction([tableName], "readwrite"),
@@ -42,38 +42,49 @@
                 };
                 request.onerror = onerror;
             };
-
         return {
             addItem : addItem,
             readItem: readItem,
             removeItem: removeItem,
             replaceItem: replaceItem
         };
-    };
+        };
 
-    window.DbManager = window.DbManager || {
-        getDataBase: function(nameDB, tableName, keyPath, parametersArray, onSuccess){
-            var idbRequest = indexedDB.open(nameDB);
-            idbRequest.onupgradeneeded =
-                function(event) {
+        window.DbManager = window.DbManager || {
+            getDataBase: function(nameDB, storesArray , onSuccess) {
+                var idbRequest = indexedDB.open(nameDB);
+                idbRequest.onupgradeneeded =
+                    function(event) {
+                        var db = event.target.result;
+                        storesArray.forEach(function(store){
+                            var objectStore = db.createObjectStore(store.storeName, { keyPath: store.keyPath });
+                            store.parametersArray.forEach(function(nameIndex) {
+                                objectStore.createIndex(nameIndex, nameIndex, { unique: false });
+                            });
+                        })
+                    };
+                idbRequest.onsuccess = function(event) {
                     var db = event.target.result,
-                        objectStore = db.createObjectStore(tableName, { keyPath: keyPath });
-                    parametersArray.forEach(function(nameIndex){
-                        objectStore.createIndex(nameIndex, nameIndex, { unique: false });
-                    });
-                };
-            idbRequest.onsuccess = function(event){
-                if (!event.target.result.objectStoreNames.contains(tableName)) {
-                    window.open('', '_blank', 'location=no').close();
-                    this.getDataBase(nameDB, tableName, keyPath, parametersArray, onSuccess);
-                    return
-                }
-                onSuccess(new OneDriveDB(event.target.result, tableName, keyPath));
-            }.bind(this)
-        },
+                        dbArray = [];
+                    storesArray.forEach(function(store){
+                        dbArray.push(new OneDriveDB(db, store.storeName, store.keyPath));
 
-        deleteDB : function(nameDB) {
+                    });
+                    onSuccess(dbArray);
+
+                }
+            },
+
+            deleteDB: function(nameDB) {
                 indexedDB.deleteDatabase(nameDB);
+            },
+
+            getNewStore: function(storeName, keyPath, parametersArray) {
+                return {
+                    storeName: storeName,
+                    keyPath: keyPath,
+                    parametersArray: parametersArray
+                }
             }
         };
 }());

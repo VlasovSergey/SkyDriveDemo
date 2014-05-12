@@ -192,14 +192,11 @@
                     ProgressIndicator.show(true);
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
-                            DbManager.getDataBase(userInfo.id, "loadState", 'id', ['state', 'url', 'localPath'], function(db) {
-                                scope.showSignInButton = false;
-                                scope.driveManager = true;
-                                dataBase = db;
-                                scope.userName = userInfo.name;
-                                scope.displayFolder();
-                                saveAccessTokenInDb(accessToken);
-                            });
+                            scope.showSignInButton = false;
+                            scope.driveManager = true;
+                            scope.userName = userInfo.name;
+                            scope.displayFolder();
+                            saveAccessTokenInDb(accessToken);
                         },
                         function(error) {
                             if(error && error.code == driveManager.getInvalidTokenErrorCode()) {
@@ -230,9 +227,12 @@
                     if(!ProgressIndicator.isShow) toPreFolder();
                 }, false);
 
-            DbManager.getDataBase("AceesTokens", "tokens", 'driveName', ['accessToken'], function(db) {
-                accessTokenDb = db;
-                db.readItem(StorageManager.STORAGE_ONE_DRIVE, function(data) {
+            DbManager.getDataBase("DriveDataBase",[DbManager.getNewStore('accessToken','driveName',['accessToken']),
+                DbManager.getNewStore('storeFiles', 'id', ['state', 'url', 'localPath'])], function(dbAr) {
+                accessTokenDb = dbAr[0];
+                dataBase = dbAr[1];
+
+                accessTokenDb.readItem(StorageManager.STORAGE_ONE_DRIVE, function(data) {
                     if (data) {
                         driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE);
                         driveManager.setAccessToken(data.accessToken);
@@ -240,7 +240,7 @@
                         scope.$apply();
                     }
                 });
-                db.readItem(StorageManager.STORAGE_GOOGLE_DRIVE, function(data) {
+                accessTokenDb.readItem(StorageManager.STORAGE_GOOGLE_DRIVE, function(data) {
                     if (data) {
                         driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE);
                         driveManager.setAccessToken(data.accessToken);
