@@ -373,7 +373,7 @@ public class BackgroundDownload extends CordovaPlugin {
                 if (cursor.moveToFirst()) {
                     int status = cursor.getInt(idxStatus);
                     int reason = cursor.getInt(idxReason);
-                    String fileName = cursor.getString(idxFileName);
+                    String fileName = idxFileName == -1? curDownload.getTempFilePath() :cursor.getString(idxFileName);
                     if (status == DownloadManager.STATUS_SUCCESSFUL) {
                         copyTempFileToActualFile(curDownload, fileName);
                     } else {
