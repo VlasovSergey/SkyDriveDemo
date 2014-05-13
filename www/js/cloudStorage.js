@@ -29,7 +29,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                     method: 'GET',
                     url: url
                 }
-            ).success(
+            ).success(window.bind(
                 function (response) {
                     response = getDataFromJSONP(response);
                     if(response.error) {
@@ -41,7 +41,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                         result = processLoadedData(response);
                         deferred.resolve(result);
                     }
-                }.bind(this)
+                }, this)
             ).error(function (e) {
                     deferred.reject();
                 });
@@ -94,9 +94,9 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                 this.setInvalidTokenErrorCode(invalidAccessTokenErrorCode);
                 this.setSignOutRedirectUrl(signOutRedirectUrlValue);
                 signOutEvent = signOutEventValue;
-                processLoadedData = processLoadedDataValue.bind(this);
+                processLoadedData = window.bind(processLoadedDataValue, this);
 
-                generateURLs = generateURLs.bind(this);
+                generateURLs = window.bind(generateURLs, this);
                 generateURLs();
             },
 
