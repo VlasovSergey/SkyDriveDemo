@@ -106,7 +106,8 @@ h6
 }*/
 
 div.item:focus,
-div.item:hover
+div.item:hover,
+div.item:active
 {
     transform: perspective(400px) rotate3d(1, -10, 0, 10deg);
     -webkit-transform: perspective(400px) rotate3d(1, -10, 0, 10deg);
@@ -148,30 +149,23 @@ div.item:hover
     margin-top: -75px;
     margin-left: -80px;
 }
+
 .loginButton {
     width: 160px;
     margin-bottom: 15px;
     height: 60px;
 }
 
-
 .find {
     background-color: #000000;
-    width: 100%;
+    margin: 30px 25px;
     position: absolute;
-    color: black;
-    height: 30px ;
 }
 
-.textEdit {
-    width: 79%;;
-    font-size: 80%;
-}
-
+.textEdit,
 .btnFind {
-    width: 19%;
+    height: 40px;
 }
-
 
 .iOS .backButton
 {

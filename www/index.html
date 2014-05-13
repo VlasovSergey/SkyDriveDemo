@@ -21,11 +21,17 @@
         <button type="button" ng-click="StartLogin('OneDrive')" class="btn btn-primary loginButton" role="button" >OneDrive</button>
         <button type="button" ng-click="StartLogin('GoogleDrive')" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
     </div>
-    <h1 ng-if="driveManager && showSignInButton" class="panel find">
-    <!--<h1 ng-if="driveManager && (showSignInButton || search)" class="panel find">-->
+<!--    <h1 ng-if="driveManager && showSignInButton" class="panel find">
+    &lt;!&ndash;<h1 ng-if="driveManager && (showSignInButton || search)" class="panel find">&ndash;&gt;
         <input class="textEdit"  class="pull-left" type="text" id="searchField"/>
         <button class="btnFind btn btn-primary pull-right" ng-click="doSearch()">find</button>
-	</h1>
+	</h1>-->
+    <div ng-if="driveManager && showSignInButton" class="input-group find">
+        <input id="searchField" type="text" class="form-control textEdit"/>
+          <span class="input-group-btn">
+            <button  ng-click="doSearch()" class="btn btn-primary btnFind " type="button">Find</button>
+          </span>
+    </div>
     <div ng-if="filesAndFolders!=null" class="container user-info">
         <div>
             <h3 class="pull-left" >
