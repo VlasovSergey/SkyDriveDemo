@@ -390,6 +390,8 @@
                 var strAr = date.split('T');
                 return strAr[0] + ' ' + strAr[1].split('+',1);
             };
+
+            scope.tabindex = function(){ return device.platform.indexOf('Win')!=-1?"1":"" }
         };
 
     angular.module('app', []).controller(controllerId, ['$scope', '$http', '$q', onControllerCreated]);
