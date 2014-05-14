@@ -387,8 +387,7 @@
             };
 
             scope.generateDateTime = function(date){
-                var strAr = date.split('T');
-                return strAr[0] + ' ' + strAr[1].split('+',1);
+                return date.substr(0, 19).replace('T', ' ');
             };
 
             scope.tabindex = function(){ return device.platform.indexOf('Win')!=-1?"1":"" }

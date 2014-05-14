@@ -28,10 +28,10 @@ function GoogleDriveManager(clientId, redirectUri) {
                     item.title += ".docx";
                 }
 
-                item.updated_time = item.updated_time || item.modifiedDate;
+                item.updated_time = item.modifiedDate;
                 // Dont work, item size did not shown in interface
-                item.size = item.size || item.fileSize;
-                item.name = item.name || item.title;
+                item.size = item.fileSize;
+                item.name = item.title;
                 // TODO: try exportLinks property
                 //item.source = item.source || item.downloadUrl;
 
