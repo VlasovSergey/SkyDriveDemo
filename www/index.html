@@ -53,7 +53,7 @@
                     <div class="item-div" style="height: 100%; width:100%"></div>
                     <div>
                         <div role="button" class="quad pull-left"  ng-style="getStyleForType(obj)">
-                            <h3 class="files-count" ng-if="obj.count">{{obj.count}}</h3>
+                            <h3 class="files-count" ng-if="obj.count !== undefined">{{obj.count}}</h3>
                         </div>
                         <h2 class="clip">{{obj.name}}</h2>
                         <h3 class="masthead-lead">{{generateDateTime(obj.updated_time)}}</h3>
