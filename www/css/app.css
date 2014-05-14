@@ -138,7 +138,8 @@ div.item:active
 
 .backButton
 {
-   display: none;
+    margin-left: 10px;
+    display: none;
 }
 
 .loginPnel {
