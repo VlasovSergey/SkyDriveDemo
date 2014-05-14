@@ -76,17 +76,16 @@
             oneDrive.fileSearch(search).then(
                 function (oneDriveFiles) {
                     console.log('OneDrive: search completed');
-                    oneDriveFiles = oneDriveFiles.filter(
-                        function(obj) {
-                            return obj.type != 'folder';
-                        });
                     addDownloadState(oneDriveFiles);
 
                     googleDrive.fileSearch(search).then(
                         function (googleDriveFiles) {
                             console.log('GoogleDrive: search completed');
                             addDownloadState(googleDriveFiles);
-                            scope.filesAndFolders = oneDriveFiles.concat(googleDriveFiles);
+                            scope.filesAndFolders = oneDriveFiles.concat(googleDriveFiles).filter(
+                                function(obj) {
+                                    return obj.type != 'folder';
+                                });;
                             scope.ShowNoSearchResult = !scope.filesAndFolders.length;
                             ProgressIndicator.hide();
                             updateStateOfDb();
