@@ -18,6 +18,15 @@
             scope.directory = nameDir;
         },
 
+        accessTokenCheckAndShowStartDisplay = function() {
+            if(StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
+                scope.driveManager = false;
+            }
+            scope.filesAndFolders = null;
+            ProgressIndicator.hide();
+            scope.showSignInButton = true;
+        },
+
         getFilesByParameter = function(parameter, value) {
             return scope.filesAndFolders.filter(
                 function (obj) {
@@ -312,15 +321,9 @@
                     function() {
                         driveManager.setAccessToken(null);
                         accessTokenDb.removeItem(driveManager.getStorageName());
-
-                        if(StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
-                            scope.driveManager = false;
-                        }
-
-                        scope.filesAndFolders = null;
-                        ProgressIndicator.hide();
-                        scope.showSignInButton = true;
-                        //scope.$apply();
+                        accessTokenCheckAndShowStartDisplay();
+                    }, function(){
+                        accessTokenCheckAndShowStartDisplay();
                     }
                 );
             };

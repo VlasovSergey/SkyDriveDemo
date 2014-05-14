@@ -212,6 +212,11 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                         deferred.resolve();
                     }
                 });
+
+                inAppBrowser.addEventListener('exit', function(e) {
+                   deferred.reject();
+                });
+
                 return deferred.promise;
             },
 
