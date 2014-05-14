@@ -156,6 +156,10 @@ div.item:active
     height: 60px;
 }
 
+.size {
+    height: 30px;
+}
+
 .find {
     background-color: #000000;
     margin: 30px 25px;

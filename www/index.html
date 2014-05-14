@@ -57,7 +57,7 @@
                         </div>
                         <h2 class="clip">{{obj.name}}</h2>
                         <h3 class="masthead-lead">{{generateDateTime(obj.updated_time)}}</h3>
-                        <h3 class="masthead-lead" ng-if="obj.size" >{{obj.size}} byte</h3>
+                        <div class="size" ><h3 class="masthead-lead" ng-if="obj.size" >{{obj.size}} byte</h3></div>
                     </div>
                     <div ng-if="(obj.type!='folder') && (obj.type!='album')" class="buttonsBar" >
                         <div ng-if="obj.state == 2" class="progress active" >
