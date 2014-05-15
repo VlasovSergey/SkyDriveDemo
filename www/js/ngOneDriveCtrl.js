@@ -348,6 +348,10 @@
             scope.toPreFolder = function() {
                 toPreFolder();
             };
+ 
+ scope.getCurrentDirectory =function() {
+ return scope.directory.replace(/[/]/g, "/ ");
+ }
 
             scope.getStyleForType = function (obj) {
 

@@ -45,7 +45,7 @@
     </div>
     <div id="id" class="container" >
         <div class="panel container" ng-if="filesAndFolders!=null" >
-            <h1 ng-if="!search" >{{directory}}</h1>
+            <h1 ng-if="!search" >{{getCurrentDirectory()}}</h1>
             <h1 class="noSearchResult" ng-if="ShowNoSearchResult">No search result</h1>
             <h1 ng-if="search && !ShowNoSearchResult">Search result</h1>
             <div class="items" ng-repeat="obj in filesAndFolders " >
