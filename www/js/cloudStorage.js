@@ -208,7 +208,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                 ProgressIndicator.show(true);
                 inAppBrowser.addEventListener(signOutEvent, function(e) {
                     if (e.url.indexOf(signOutRedirectUrl) === 0) {
-                        inAppBrowser.close();
+                        setTimeout(function(){inAppBrowser.close();},500);
                         deferred.resolve();
                     }
                 });
