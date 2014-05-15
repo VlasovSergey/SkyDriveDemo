@@ -22,9 +22,9 @@ function GoogleDriveManager(clientId, redirectUri) {
                 }
 
                 if (item.downloadUrl) {
-                    item.source = item.downloadUrl + "&" + storage.getAccessToken();
+                    item.source = item.downloadUrl + "&access_token=" + storage.getAccessToken();
                 } else if (item.exportLinks) {
-                    item.source = item.exportLinks["application/vnd.openxmlformats-officedocument.wordprocessingml.document"] + "&" + storage.getAccessToken();
+                    item.source = item.exportLinks["application/vnd.openxmlformats-officedocument.wordprocessingml.document"] + "&access_token=" + storage.getAccessToken();
                     item.title += ".docx";
                 }
 
@@ -54,8 +54,8 @@ function GoogleDriveManager(clientId, redirectUri) {
             searchString = storage.getSearchString(),
             redirectUri = storage.getRedirectUri(),
 
-            userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&callback=JSONP&" + accessToken,
-            filesUrlForDirectory = "https://www.googleapis.com/drive/v2/files?q='%folderID%'%20in%20parents%20and%20(trashed%20=%20false)&callback=JSONP&" + accessToken,
+            userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json&callback=JSONP&access_token=" + accessToken,
+            filesUrlForDirectory = "https://www.googleapis.com/drive/v2/files?q='%folderID%'%20in%20parents%20and%20(trashed%20=%20false)&callback=JSONP&access_token=" + accessToken,
             singOutUrl = "https://accounts.google.com/logout?",
             signInUrl = "https://accounts.google.com/o/oauth2/auth?" +
                 "client_id=" + clientId +
@@ -63,7 +63,7 @@ function GoogleDriveManager(clientId, redirectUri) {
                 "&scope=openid%20profile%20https://www.googleapis.com/auth/drive.file%20https://www.googleapis.com/auth/drive%20https://www.googleapis.com/auth/userinfo.profile" +
                 "&state=redirect_type=auth" +
                 "&redirect_uri=" + redirectUri,
-            searchUrl = "https://www.googleapis.com/drive/v2/files?callback=JSONP&q=title%20contains%20'" + searchString + "'&" + accessToken;
+            searchUrl = "https://www.googleapis.com/drive/v2/files?callback=JSONP&q=title%20contains%20'" + searchString + "'&access_token=" + accessToken;
         storage.setUrls(userInfoUrl, filesUrlForDirectory, signInUrl, singOutUrl, searchUrl);
     };
 

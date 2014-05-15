@@ -49,15 +49,8 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
         },
 
         getAccessTokenFromURL = function(url) {
-            url = url.substr(url.indexOf('access_token='));
-            if (url.length === 0) {
-                return null;
-            }
-            if (url.indexOf('&') !== -1) {
-                return url.substr(0, url.indexOf('&'));
-            } else {
-                return url;
-            }
+            var match = url.match(/access_token=([^&]*)/);
+            return (match ? match[1] : null);
         },
 
         generateURLs = function(){
@@ -189,7 +182,9 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                             accessToken = getAccessTokenFromURL(e.url);
                             generateURLs();
                             deferred.resolve(accessToken);
-                            inAppBrowser.close();
+                            setTimeout(function() {
+                                inAppBrowser.close();
+                            },500);
                         }
                     });
 
@@ -208,7 +203,9 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                 ProgressIndicator.show(true);
                 inAppBrowser.addEventListener(signOutEvent, function(e) {
                     if (e.url.indexOf(signOutRedirectUrl) === 0) {
-                        setTimeout(function(){inAppBrowser.close();},500);
+                        setTimeout(function() {
+                            inAppBrowser.close();
+                        },500);
                         deferred.resolve();
                     }
                 });
