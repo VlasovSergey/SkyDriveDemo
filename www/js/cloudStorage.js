@@ -19,7 +19,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
         processLoadedData,
 
         getDataFromJSONP = function(jsonp) {
-            return JSON.parse(jsonp.substring(jsonp.indexOf('JSONP(')+6, jsonp.length - 2 ));
+            return JSON.parse(jsonp.match(/JSONP\(([^]*)\);/)[1]);
         },
 
         doLoad = function(url) {
