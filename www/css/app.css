@@ -11,8 +11,11 @@ html, body {
     -webkit-user-modify: read;
     -webkit-user-select:none;
     background: white;
-}
 
+}
+* {
+    zoom: 0.95;
+}
 body {
     font-size: 11pt;
     font-family:"Segoe WP";
@@ -168,7 +171,9 @@ div.item:active
     position: absolute;
 }
 
-.textEdit,
+.textEdit {
+    height: 38px;
+}
 .btnFind {
     height: 40px;
 }
@@ -177,9 +182,7 @@ div.item:active
 {
    display:inline;
 }
-.iOS body
+.iOS topPanel
 {
     margin-top:25px;
 }
-
-
