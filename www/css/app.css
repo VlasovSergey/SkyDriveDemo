@@ -11,11 +11,12 @@ html, body {
     -webkit-user-modify: read;
     -webkit-user-select:none;
     background: white;
-
 }
+
 * {
     zoom: 0.95;
 }
+
 body {
     font-size: 11pt;
     font-family:"Segoe WP";
@@ -182,7 +183,8 @@ div.item:active
 {
    display:inline;
 }
-.iOS topPanel
+
+html.iOS
 {
-    margin-top:25px;
+    margin-top:20px;
 }

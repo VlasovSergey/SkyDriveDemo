@@ -9,6 +9,6 @@ window.bind = function(funct, thisArg) {
 }
 
 document.addEventListener('deviceready', function() {
-    $('body').addClass(device.platform);
+    $('html').addClass(device.platform);
     ProgressIndicator.hide();
 });
