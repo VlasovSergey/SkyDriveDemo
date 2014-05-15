@@ -111,8 +111,8 @@ h6
 }*/
 
 div.item:focus,
-div.item:hover,
-div.item:active
+div.item:active,
+div.item:hover
 {
     transform: perspective(400px) rotate3d(1, -10, 0, 10deg);
     -webkit-transform: perspective(400px) rotate3d(1, -10, 0, 10deg);
@@ -183,8 +183,14 @@ div.item:active
 {
    display:inline;
 }
-
-html.iOS
+.iOS .topPanel {
+    position: fixed;
+    height: 25px;
+    width: 100%;
+    margin-bottom: 10px;
+    background-color: #ffffff;
+}
+.iOS .user-info
 {
-    margin-top:20px;
+    padding-top:25px
 }
