@@ -47,7 +47,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                     }
                 }, this)
             ).error(function (e) {
-                    deferred.reject();
+                    deferred.reject(e);
                 });
             return deferred.promise;
         },

@@ -18,6 +18,12 @@
             scope.directory = nameDir;
         },
 
+        onGetDataFromServerError = function() {
+            navigator.notification.alert("Please turn off airplane mode or make sure you're connected to a Wi-Fi or cellular network.", null, 'No network connection');
+            scope.filesAndFolders = null;
+            scope.showSignInButton = true;
+        },
+
         accessTokenCheckAndShowStartDisplay = function() {
             if(StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
                 scope.driveManager = false;
@@ -107,6 +113,8 @@
                                         doSearch(search);
                                     }
                                 );
+                            } else {
+                                onGetDataFromServerError();
                             }
                             ProgressIndicator.hide();
                         }
@@ -121,9 +129,9 @@
                             }
                         );
                     } else {
+                        onGetDataFromServerError();
                         ProgressIndicator.hide();
                         scope.search = false;
-                        scope.showSignInButton = true;
                     }
                 }
             );
@@ -209,6 +217,8 @@
                         function(error) {
                             if(error && error.code == driveManager.getInvalidTokenErrorCode()) {
                                 run(storage);
+                            } else {
+                                onGetDataFromServerError();
                             }
                             ProgressIndicator.hide();
                         }
@@ -295,6 +305,8 @@
                                     scope.displayFolder(folder, direction);
                                 }
                             );
+                        } else {
+                            onGetDataFromServerError();
                         }
                         ProgressIndicator.hide();
                     }
@@ -349,8 +361,8 @@
                 toPreFolder();
             };
  
- scope.getCurrentDirectory =function() {
- return scope.directory.replace(/[/]/g, "/ ");
+ scope.getCurrentDirectory = function() {
+    return scope.directory.replace(/[/]/g, "/ ");
  }
 
             scope.getStyleForType = function (obj) {
