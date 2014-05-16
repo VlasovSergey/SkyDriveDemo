@@ -111,8 +111,7 @@ h6
 }*/
 
 div.item:focus,
-div.item:active,
-div.item:hover
+div.item:active
 {
     transform: perspective(400px) rotate3d(1, -10, 0, 10deg);
     -webkit-transform: perspective(400px) rotate3d(1, -10, 0, 10deg);
