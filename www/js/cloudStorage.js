@@ -38,7 +38,11 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                         }
                         deferred.reject(response.error);
                     } else {
-                        result = processLoadedData(response);
+                        if(response.data || response.items){
+                            result = processLoadedData(response);
+                        } else {
+                            result = response;
+                        }
                         deferred.resolve(result);
                     }
                 }, this)
@@ -250,28 +254,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
             },
 
             loadUserInfo: function() {
-                generateURLs();
-                var deferred = q.defer();
-                http({
-                        method: 'GET',
-                        url: userInfoUrl
-                    }
-                ).success(
-                    function (userInfo) {
-                        userInfo = getDataFromJSONP(userInfo);
-                        if(userInfo.error) {
-                            if(userInfo.error.code = TOKEN_INVALID_CODE) {
-                                accessToken = null;
-                            }
-                            deferred.reject(userInfo.error);
-                        } else {
-                            deferred.resolve(userInfo);
-                        }
-                    }
-                ).error(function(e) {
-                    deferred.reject(e);
-                });
-                return deferred.promise;
+                return doLoad(userInfoUrl);
             },
 
             downloadFile: function (uriString, fileName, onSuccess , onError, onProgress) {
