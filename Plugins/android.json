@@ -11,7 +11,8 @@
                 "<feature name=\"BackgroundDownload\"><param name=\"android-package\" value=\"org.apache.cordova.backgroundDownload.BackgroundDownload\" /></feature>": 1,
                 "<feature name=\"Device\"><param name=\"android-package\" value=\"org.apache.cordova.device.Device\" /></feature>": 1,
                 "<feature name=\"InAppBrowser\"><param name=\"android-package\" value=\"org.apache.cordova.inappbrowser.InAppBrowser\" /></feature>": 1,
-                "<feature name=\"ProgressIndicator\"><param name=\"android-package\" value=\"org.apache.cordova.progressIndicator.ProgressIndicator\" /></feature>": 1
+                "<feature name=\"ProgressIndicator\"><param name=\"android-package\" value=\"org.apache.cordova.progressIndicator.ProgressIndicator\" /></feature>": 1,
+                "<feature name=\"Notification\"><param name=\"android-package\" value=\"org.apache.cordova.dialogs.Notification\" /></feature>": 1
             }
         },
         "AndroidManifest.xml": {
@@ -34,6 +35,9 @@
             "PACKAGE_NAME": "akvelon.cordova.oneDriveDemoApp"
         },
         "org.apache.cordova.progress-indicator": {
+            "PACKAGE_NAME": "akvelon.cordova.oneDriveDemoApp"
+        },
+        "org.apache.cordova.dialogs": {
             "PACKAGE_NAME": "akvelon.cordova.oneDriveDemoApp"
         }
     },

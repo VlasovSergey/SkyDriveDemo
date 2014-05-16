@@ -1,0 +1,49 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "config.xml": {
+            "/*": {
+                "<feature name=\"FileOpener\"><param name=\"wp-package\" value=\"FileOpener\" /></feature>": 1,
+                "<feature name=\"File\"><param name=\"wp-package\" value=\"File\" /></feature>": 1,
+                "<feature name=\"BackgroundDownload\"><param name=\"wp-package\" value=\"BackgroundDownload\" /></feature>": 1,
+                "<feature name=\"Device\"><param name=\"wp-package\" value=\"Device\" /></feature>": 1,
+                "<feature name=\"InAppBrowser\"><param name=\"wp-package\" value=\"InAppBrowser\" /></feature>": 1,
+                "<feature name=\"ProgressIndicator\"><param name=\"wp-package\" value=\"ProgressIndicator\" /></feature>": 1,
+                "<feature name=\"Notification\"><param name=\"wp-package\" value=\"Notification\" /></feature>": 1
+            }
+        },
+        "Properties/WMAppManifest.xml": {
+            "/Deployment/App/Capabilities": {
+                "<Capability Name=\"ID_CAP_IDENTITY_DEVICE\" />": 1
+            }
+        }
+    },
+    "installed_plugins": {
+        "com.phonegap.plugins.fileopener": {
+            "PACKAGE_NAME": "{61209D04-042D-4501-8208-8345BF227AC7}"
+        },
+        "org.apache.cordova.background-download": {
+            "PACKAGE_NAME": "{61209D04-042D-4501-8208-8345BF227AC7}"
+        },
+        "org.apache.cordova.device": {
+            "PACKAGE_NAME": "{61209D04-042D-4501-8208-8345BF227AC7}"
+        },
+        "org.apache.cordova.inappbrowser": {
+            "PACKAGE_NAME": "{61209D04-042D-4501-8208-8345BF227AC7}"
+        },
+        "org.apache.cordova.progress-indicator": {
+            "PACKAGE_NAME": "{61209D04-042D-4501-8208-8345BF227AC7}"
+        },
+        "org.apache.cordova.dialogs": {
+            "PACKAGE_NAME": "{61209D04-042D-4501-8208-8345BF227AC7}"
+        }
+    },
+    "dependent_plugins": {
+        "org.apache.cordova.file": {
+            "PACKAGE_NAME": "{61209D04-042D-4501-8208-8345BF227AC7}"
+        }
+    }
+}
