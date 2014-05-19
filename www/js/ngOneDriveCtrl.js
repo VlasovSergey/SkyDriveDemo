@@ -356,14 +356,18 @@
                 saveStateToDataBase(file);
                 downloadFile(file);
             };
+
+            scope.stopDownload = function(file) {
+                driveManager.stopDownloadFile(file.source);
+            },
             
             scope.toPreFolder = function() {
                 toPreFolder();
             };
  
- scope.getCurrentDirectory = function() {
-    return scope.directory.replace(/[/]/g, "/ ");
- }
+            scope.getCurrentDirectory = function() {
+                return scope.directory.replace(/[/]/g, "/ ");
+            }
 
             scope.getStyleForType = function (obj) {
 

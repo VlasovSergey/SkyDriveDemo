@@ -15,7 +15,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
         nameSearch,
         signOutRedirectUrl,
         signOutEvent,
-
+        currentDownloads = [],
         processLoadedData,
 
         getDataFromJSONP = function(jsonp) {
@@ -262,6 +262,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                     createDirectoryForPath(fileName, fileSystem).then( function() {
                         fileSystem.root.getFile(fileName, { create: true }, function (targetFile){
                             var onSuccessThis = function(res){
+                                    delete currentDownloads[uriString];
                                     onSuccess(targetFile.toNativeURL());
                                 },
                                 downloader = new BackgroundTransfer.BackgroundDownloader(),
@@ -269,9 +270,16 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                                 download = downloader.createDownload(uriString, targetFile);
                             // Start the download and persist the promise to be able to cancel the download.
                             download.startAsync().then(onSuccessThis, onError, onProgress);
+                            currentDownloads[download.uri] = download;
                         });
                     });
                 });
+            },
+
+            stopDownloadFile: function(url) {
+                currentDownloads[url].stop();
+                delete currentDownloads[url];
             }
+
         };
 };
