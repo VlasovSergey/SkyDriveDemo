@@ -20,6 +20,7 @@ package org.apache.cordova.backgroundDownload;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -349,45 +350,50 @@ public class BackgroundDownload extends CordovaPlugin {
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-
-            DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-            
-            long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-            DownloadManager.Query query = new DownloadManager.Query();
-            query.setFilterById(downloadId);
-            Cursor cursor = mgr.query(query);
-            int idxURI = cursor.getColumnIndex(DownloadManager.COLUMN_URI);
-            cursor.moveToFirst();
-            String uri = cursor.getString(idxURI);
-
-            Download curDownload = activDownloads.get(uri);
-
-            try {
-                long receivedID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L);
-                query.setFilterById(receivedID);
-                int idxStatus = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
-                int idxReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
-                
-                int idxFileName = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
-
-                if (cursor.moveToFirst()) {
-                    int status = cursor.getInt(idxStatus);
-                    int reason = cursor.getInt(idxReason);
-                    String fileName = idxFileName == -1? curDownload.getTempFilePath() :cursor.getString(idxFileName);
-                    if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                        copyTempFileToActualFile(curDownload, fileName);
-                    } else {
-                        curDownload.getCallbackContextDownloadStart().error("Download operation failed with status " + status + " and reason: "    + getUserFriendlyReason(reason));
+        	try {
+                DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+	            
+                long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                DownloadManager.Query query = new DownloadManager.Query();
+                query.setFilterById(downloadId);
+                Cursor cursor = mgr.query(query);
+                Download curDownload = null;
+                for(Entry<String, Download> entry : activDownloads.entrySet()) {
+                    Download value = entry.getValue();
+                    if(value.getDownloadId() == downloadId) {
+                        curDownload = value;
+                        break;
                     }
-                } else {
-                    curDownload.getCallbackContextDownloadStart().error("cancelled or terminated");
                 }
-                cursor.close();
-            } catch (Exception ex) {
-                curDownload.getCallbackContextDownloadStart().error(ex.getMessage());
-            } finally {
-                CleanUp(curDownload);
-            }
+          
+                
+                try {
+                    long receivedID = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L);
+                    query.setFilterById(receivedID);
+                    int idxStatus = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    int idxReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
+
+                    int idxFileName = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
+
+                    if (cursor.moveToFirst()) {
+                        int status = cursor.getInt(idxStatus);
+                        int reason = cursor.getInt(idxReason);
+                        String fileName = idxFileName == -1? curDownload.getTempFilePath() :cursor.getString(idxFileName);
+                        if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                            copyTempFileToActualFile(curDownload, fileName);
+                        } else {
+                            curDownload.getCallbackContextDownloadStart().error("Download operation failed with status " + status + " and reason: "    + getUserFriendlyReason(reason));
+                        }
+                    } else {
+                        curDownload.getCallbackContextDownloadStart().error("cancelled or terminated");
+                    }
+                    cursor.close();
+                } catch (Exception ex) {
+                    curDownload.getCallbackContextDownloadStart().error(ex.getMessage());
+                } finally {
+                    CleanUp(curDownload);
+                }
+            } catch (Exception ex) {}
         }
     };
 
