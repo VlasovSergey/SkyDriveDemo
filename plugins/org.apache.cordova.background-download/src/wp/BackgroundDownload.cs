@@ -142,7 +142,7 @@ namespace WPCordovaClassLib.Cordova.Commands
                 {
                     var strErrorMessage = transfer.TransferError != null ? transfer.TransferError.Message : "Unspecified transfer error";
                     DispatchCommandResult(new PluginResult(PluginResult.Status.ERROR, strErrorMessage), _activDownloads[transfer.Tag].CallbackId);
-                    //_activDownload.Remove(transfer.Tag);
+                    _activDownloads.Remove(transfer.Tag);
                 }
                 CleanUp(transfer);
             }
