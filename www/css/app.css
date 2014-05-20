@@ -13,7 +13,9 @@ html, body {
     background: white;
 }
 
-* {
+.iOS *,
+.Android *
+{
     zoom: 0.95;
 }
 
