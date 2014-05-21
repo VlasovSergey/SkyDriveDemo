@@ -7,9 +7,9 @@
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
     <meta http-equiv="x-ua-compatible" content="IE=edge">
 
-    <title>OneDrive</title>
+    <title>CloudDrive</title>
 
-    <link href="lib/bootstrap.css" rel="stylesheet">
+    <link href="lib/bootstarp/css/bootstrap.css" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
 
     <script type="text/javascript" charset="utf-8" src="lib/IndexedDBShim.js"></script>
@@ -17,16 +17,10 @@
 </head>
 <body ng-controller="ngCloudDriveCtrl"  ontouchstart="" >
     <div class="topPanel" ></div>
-    <!--<button class="btn" ng-click="check()" ></button>-->
     <div ng-if='showSignInButton' class="loginPnel" >
         <button type="button" ng-click="StartLogin('OneDrive')" class="btn btn-primary loginButton" role="button" >OneDrive</button>
         <button type="button" ng-click="StartLogin('GoogleDrive')" class="btn btn-primary loginButton" role="button" >GoogleDrive</button>
     </div>
-<!--    <h1 ng-if="driveManager && showSignInButton" class="panel find">
-    &lt;!&ndash;<h1 ng-if="driveManager && (showSignInButton || search)" class="panel find">&ndash;&gt;
-        <input class="textEdit"  class="pull-left" type="text" id="searchField"/>
-        <button class="btnFind btn btn-primary pull-right" ng-click="doSearch()">find</button>
-	</h1>-->
     <div ng-if="driveManager && showSignInButton" class="input-group find">
         <input id="searchField" type="text" class="form-control textEdit"/>
           <span class="input-group-btn">

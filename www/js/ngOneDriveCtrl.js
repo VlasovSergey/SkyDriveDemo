@@ -13,34 +13,40 @@
         dataBase,
         directoryIds = [],
 
+        showStartDisplay = function() {
+            scope.filesAndFolders = null;
+            scope.showSignInButton = true;
+        },
+
+        hideStartDisplay = function(){
+            scope.showSignInButton = false;
+        },
+
         setDriveDirrectory  = function(nameDir) {
             rootTitle = nameDir;
             scope.directory = nameDir;
         },
 
-        onGetDataFromServerError = function() {
+        onServerErrorWhenRequestingData = function() {
             navigator.notification.alert("Please turn off airplane mode or make sure you're connected to a Wi-Fi or cellular network.", null, 'No network connection');
-            scope.filesAndFolders = null;
-            scope.showSignInButton = true;
         },
 
         accessTokenCheckAndShowStartDisplay = function() {
-            if(StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
+            if (StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
                 scope.driveManager = false;
             }
-            scope.filesAndFolders = null;
+            showStartDisplay();
             ProgressIndicator.hide();
-            scope.showSignInButton = true;
         },
 
         getFilesByParameter = function(parameter, value) {
             return scope.filesAndFolders.filter(
-                function (obj) {
+                function(obj) {
                     return obj[parameter] === value;
                 });
         },
 
-        saveAccessTokenInDb = function(accessToken){
+        saveAccessTokenInDb = function(accessToken) {
             accessTokenDb.addItem(
                 {
                     driveName: driveManager.getStorageName(),
@@ -50,7 +56,7 @@
         },
 
         addDownloadState = function(fileList) {
-            fileList.forEach(function(fileInfo) {
+            fileList.forEach( function(fileInfo) {
                 if(fileInfo.type !== 'folder'){
                     setFileState(fileInfo, NOT_DOWNLOADED_STATE);
                 }
@@ -61,13 +67,12 @@
             file.state = state;
         },
 
-        toPreFolder = function () {
+        toPreFolder = function() {
             if (scope.showSignInButton == true && navigator.app ) {
                 navigator.app.exitApp();
             } else if (scope.directory == rootTitle || scope.search) {
                 scope.ShowNoSearchResult = false;
-                scope.filesAndFolders = null;
-                scope.showSignInButton = true;
+                showStartDisplay();
                 scope.search = false;
                 scope.$apply();
                 return;
@@ -81,8 +86,8 @@
         doSearch = function(searchVal) {
             var search = searchVal ? searchVal : $("#searchField").val();
 
-            scope.showSignInButton = false;
-            //if(search == ""){ return }
+            hideStartDisplay();
+
             ProgressIndicator.show(true);
             scope.search = true;
             var oneDrive = StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE),
@@ -114,7 +119,7 @@
                                     }
                                 );
                             } else {
-                                onGetDataFromServerError();
+                                onServerErrorWhenRequestingData();
                             }
                             ProgressIndicator.hide();
                         }
@@ -129,7 +134,7 @@
                             }
                         );
                     } else {
-                        onGetDataFromServerError();
+                        onServerErrorWhenRequestingData();
                         ProgressIndicator.hide();
                         scope.search = false;
                     }
@@ -208,7 +213,7 @@
                     ProgressIndicator.show(true);
                     driveManager.loadUserInfo().then(
                         function (userInfo) {
-                            scope.showSignInButton = false;
+                            hideStartDisplay();
                             scope.driveManager = true;
                             scope.userName = userInfo.name;
                             scope.displayFolder();
@@ -218,7 +223,7 @@
                             if(error && error.code == driveManager.getInvalidTokenErrorCode()) {
                                 run(storage);
                             } else {
-                                onGetDataFromServerError();
+                                onServerErrorWhenRequestingData();
                             }
                             ProgressIndicator.hide();
                         }
@@ -227,7 +232,7 @@
                 function(accessToken){
                     ProgressIndicator.hide();
                     if (accessToken){
-                        scope.showSignInButton = true;
+                        showStartDisplay();
                     }
                 }
             );
@@ -238,40 +243,8 @@
             http = $http;
             q = $q;
 
-            StorageManager.initialize(http, q);
-
-            document.addEventListener("backbutton",
-                function() {
-                    if(!ProgressIndicator.isShow) toPreFolder();
-                }, false);
-
-            DbManager.getDataBase("DriveDataBase",[DbManager.getNewStore('accessToken','driveName',['accessToken']),
-                DbManager.getNewStore('storeFiles', 'id', ['state', 'url', 'localPath'])], function(dbAr) {
-                accessTokenDb = dbAr[0];
-                dataBase = dbAr[1];
-
-                accessTokenDb.readItem(StorageManager.STORAGE_ONE_DRIVE, function(data) {
-                    if (data) {
-                        driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE);
-                        driveManager.setAccessToken(data.accessToken);
-                        scope.driveManager = true;
-                        scope.$apply();
-                    }
-                });
-                accessTokenDb.readItem(StorageManager.STORAGE_GOOGLE_DRIVE, function(data) {
-                    if (data) {
-                        driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE);
-                        driveManager.setAccessToken(data.accessToken);
-                        scope.driveManager = true;
-                        scope.$apply();
-                    }
-                });
-
-            });
-
             scope.ShowNoSearchResult = false;
             scope.directory = rootTitle;
-            scope.showSignInButton = true;
 
             scope.displayFolder = function (folder, direction) {
                 if (folder && folder.type && (folder.type !== "folder")) return;
@@ -306,19 +279,12 @@
                                 }
                             );
                         } else {
-                            onGetDataFromServerError();
+                            onServerErrorWhenRequestingData();
                         }
                         ProgressIndicator.hide();
                     }
                 );
             };
-
-/*
-            scope.check = function() {
-                driveManager.setAccessToken('access_token=asdasd');
-                console.log('accessToken='+ driveManager.getAccessToken());
-            };
-*/
 
             scope.doSearch = function() {
                 doSearch();
@@ -408,11 +374,46 @@
                 }
             };
 
-            scope.generateDateTime = function(date){
+            scope.generateDateTime = function(date) {
                 return date.substr(0, 19).replace('T', ' ');
             };
 
             scope.tabindex = function(){ return device.platform.indexOf('Win')!=-1?"1":"" }
+
+
+            showStartDisplay();
+
+            StorageManager.initialize(http, q);
+
+            document.addEventListener("backbutton",
+                function() {
+                    if (!ProgressIndicator.isShow) toPreFolder();
+                }, false);
+
+            DbManager.getDataBase("DriveDataBase",[DbManager.getNewStore('accessToken','driveName',['accessToken']),
+                DbManager.getNewStore('storeFiles', 'id', ['state', 'url', 'localPath'])], function(dbAr) {
+                accessTokenDb = dbAr[0];
+                dataBase = dbAr[1];
+
+                accessTokenDb.readItem(StorageManager.STORAGE_ONE_DRIVE, function(data) {
+                    if (data) {
+                        driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE);
+                        driveManager.setAccessToken(data.accessToken);
+                        scope.driveManager = true;
+                        scope.$apply();
+                    }
+                });
+
+                accessTokenDb.readItem(StorageManager.STORAGE_GOOGLE_DRIVE, function(data) {
+                    if (data) {
+                        driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE);
+                        driveManager.setAccessToken(data.accessToken);
+                        scope.driveManager = true;
+                        scope.$apply();
+                    }
+                });
+            });
+
         };
 
     angular.module('app', []).controller(controllerId, ['$scope', '$http', '$q', onControllerCreated]);
