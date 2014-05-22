@@ -16,6 +16,11 @@
         showStartDisplay = function() {
             scope.filesAndFolders = null;
             scope.showSignInButton = true;
+            scope.search = false;
+            if (window.ProgressIndicator) {
+                ProgressIndicator.hide();
+            }
+
         },
 
         hideStartDisplay = function(){
@@ -29,6 +34,20 @@
 
         onServerErrorWhenRequestingData = function() {
             navigator.notification.alert("Please turn off airplane mode or make sure you're connected to a Wi-Fi or cellular network.", null, 'No network connection');
+            showStartDisplay();
+        },
+
+        onUseAccessTokenError = function(error, storage, action ) {
+            if(error && error.code == storage.getInvalidTokenErrorCode()) {
+                driveManager.signIn().then(
+                    function(accessToken) {
+                        saveAccessTokenInDb(accessToken);
+                        action();
+                    }
+                );
+            } else {
+                onServerErrorWhenRequestingData();
+            }
         },
 
         accessTokenCheckAndShowStartDisplay = function() {
@@ -36,7 +55,6 @@
                 scope.driveManager = false;
             }
             showStartDisplay();
-            ProgressIndicator.hide();
         },
 
         getFilesByParameter = function(parameter, value) {
@@ -57,7 +75,7 @@
 
         addDownloadState = function(fileList) {
             fileList.forEach( function(fileInfo) {
-                if(fileInfo.type !== 'folder'){
+                if (fileInfo.type !== 'folder') {
                     setFileState(fileInfo, NOT_DOWNLOADED_STATE);
                 }
             });
@@ -68,12 +86,12 @@
         },
 
         toPreFolder = function() {
-            if (scope.showSignInButton == true && navigator.app ) {
+            if (scope.showSignInButton && navigator.app) {
                 navigator.app.exitApp();
-            } else if (scope.directory == rootTitle || scope.search) {
+            } else if ( (scope.directory == rootTitle) || scope.search) {
                 scope.ShowNoSearchResult = false;
-                showStartDisplay();
                 scope.search = false;
+                showStartDisplay();
                 scope.$apply();
                 return;
             }
@@ -105,39 +123,17 @@
                             scope.filesAndFolders = oneDriveFiles.concat(googleDriveFiles).filter(
                                 function(obj) {
                                     return obj.type != 'folder';
-                                });;
+                                });
                             scope.ShowNoSearchResult = !scope.filesAndFolders.length;
-                            ProgressIndicator.hide();
                             updateStateOfDb();
                         },
-                        function(error){
-                            if(error && error.code == googleDrive.getInvalidTokenErrorCode()) {
-                                googleDrive.signIn().then(
-                                    function(accessToken) {
-                                        saveAccessTokenInDb(accessToken);
-                                        doSearch(search);
-                                    }
-                                );
-                            } else {
-                                onServerErrorWhenRequestingData();
-                            }
-                            ProgressIndicator.hide();
+                        function(error) {
+                            onUseAccessTokenError(error, googleDrive, function() {doSearch(search);});
                         }
                     );
                 },
                 function(error) {
-                    if(error && error.code == oneDrive.getInvalidTokenErrorCode()) {
-                        oneDrive.signIn().then(
-                            function(accessToken) {
-                                saveAccessTokenInDb(accessToken);
-                                doSearch(search);
-                            }
-                        );
-                    } else {
-                        onServerErrorWhenRequestingData();
-                        ProgressIndicator.hide();
-                        scope.search = false;
-                    }
+                    onUseAccessTokenError(error, oneDrive, function() {doSearch(search);});
                 }
             );
         },
@@ -160,6 +156,7 @@
                     });
                 }
             });
+            ProgressIndicator.hide();
         },
 
         downloadFile = function (file) {
@@ -220,22 +217,25 @@
                             saveAccessTokenInDb(accessToken);
                         },
                         function(error) {
-                            if(error && error.code == driveManager.getInvalidTokenErrorCode()) {
-                                run(storage);
-                            } else {
-                                onServerErrorWhenRequestingData();
-                            }
-                            ProgressIndicator.hide();
+                            onUseAccessTokenError(error, driveManager, function() {run(storage);});
                         }
                     );
                 },
-                function(accessToken){
-                    ProgressIndicator.hide();
-                    if (accessToken){
-                        showStartDisplay();
-                    }
+                function() {
+                    showStartDisplay();
                 }
             );
+        },
+
+        verificationAccessTokenToDataBase = function(storage) {
+            accessTokenDb.readItem(storage, function(data) {
+                if (data) {
+                    driveManager = StorageManager.getStorageInstance(storage);
+                    driveManager.setAccessToken(data.accessToken);
+                    scope.driveManager = true;
+                    scope.$apply();
+                }
+            });
         },
 
         onControllerCreated = function ($scope, $http, $q) {
@@ -266,22 +266,10 @@
                             dirArr.splice(dirArr.length - 1, 1);
                             scope.directory = dirArr.join("/");
                         }
-
                         updateStateOfDb();
-                        ProgressIndicator.hide();
                     },
                     function(error) {
-                        if(error && error.code == driveManager.getInvalidTokenErrorCode()) {
-                            driveManager.signIn().then(
-                                function(accessToken) {
-                                    saveAccessTokenInDb(accessToken);
-                                    scope.displayFolder(folder, direction);
-                                }
-                            );
-                        } else {
-                            onServerErrorWhenRequestingData();
-                        }
-                        ProgressIndicator.hide();
+                        onUseAccessTokenError(error, driveManager, function() {scope.displayFolder(folder, direction);});
                     }
                 );
             };
@@ -294,19 +282,20 @@
                 run(storage);
             };
 
-            scope.signOut = function () {
+            scope.signOut = function() {
                 driveManager.signOut().then(
                     function() {
                         driveManager.setAccessToken(null);
                         accessTokenDb.removeItem(driveManager.getStorageName());
                         accessTokenCheckAndShowStartDisplay();
-                    }, function(){
+                    }, function() {
+                        navigator.notification.alert("Failed SignOut", null, 'Failed SignOut');
                         accessTokenCheckAndShowStartDisplay();
                     }
                 );
             };
 
-            scope.openFile = function (file) {
+            scope.openFile = function(file) {
                 if (file.state == 1) {
                     window.plugins.fileOpener.open(file.localPath);
                     return;
@@ -318,7 +307,7 @@
                 }
             };
 
-            scope.onClickDownloadButton = function (file) {
+            scope.onClickDownloadButton = function(file) {
                 saveStateToDataBase(file);
                 downloadFile(file);
             };
@@ -336,14 +325,12 @@
             }
 
             scope.getStyleForType = function (obj) {
-
                 if (obj.thumbnailLink) {
                     return {
                         'background-image': "url(" + obj.thumbnailLink + ")",
                         'background-size': '100%'
                     };
                 }
-
                 switch (obj.type) {
                     case "album": return {'background': "#3e4bff"};
                     case "audio":
@@ -357,15 +344,11 @@
                     };
                     case "folder": return {'background': "#3e4bff"};
                     case "photo":
+                    case "video":
                         return {
                             'background-image': "url(" + obj.previewUrl + ")",
                             'background-size': '100%',
                             'background-repeat': 'no-repeat'
-                        };
-                    case "video":
-                        return {
-                            'background-image': "url(" + obj.previewUrl + ")",
-                            'background-size': '100%'
                         };
                     case "notebook": return {
                         'background-image': 'url("img/oneNote.png")',
@@ -378,8 +361,7 @@
                 return date.substr(0, 19).replace('T', ' ');
             };
 
-            scope.tabindex = function(){ return device.platform.indexOf('Win')!=-1?"1":"" }
-
+            scope.tabindex = function() { return device.platform.indexOf('Win') != -1 ? "1" : "" }
 
             showStartDisplay();
 
@@ -390,30 +372,14 @@
                     if (!ProgressIndicator.isShow) toPreFolder();
                 }, false);
 
-            DbManager.getDataBase("DriveDataBase",[DbManager.getNewStore('accessToken','driveName',['accessToken']),
+            DbManager.getDataBase("DriveDataBase",[DbManager.getNewStore('accessToken', 'driveName', ['accessToken']),
                 DbManager.getNewStore('storeFiles', 'id', ['state', 'url', 'localPath'])], function(dbAr) {
                 accessTokenDb = dbAr[0];
                 dataBase = dbAr[1];
 
-                accessTokenDb.readItem(StorageManager.STORAGE_ONE_DRIVE, function(data) {
-                    if (data) {
-                        driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE);
-                        driveManager.setAccessToken(data.accessToken);
-                        scope.driveManager = true;
-                        scope.$apply();
-                    }
-                });
-
-                accessTokenDb.readItem(StorageManager.STORAGE_GOOGLE_DRIVE, function(data) {
-                    if (data) {
-                        driveManager = StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE);
-                        driveManager.setAccessToken(data.accessToken);
-                        scope.driveManager = true;
-                        scope.$apply();
-                    }
-                });
+                verificationAccessTokenToDataBase(StorageManager.STORAGE_ONE_DRIVE);
+                verificationAccessTokenToDataBase(StorageManager.STORAGE_GOOGLE_DRIVE);
             });
-
         };
 
     angular.module('app', []).controller(controllerId, ['$scope', '$http', '$q', onControllerCreated]);

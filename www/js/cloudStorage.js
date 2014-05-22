@@ -171,7 +171,6 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
             },
 
             signIn: function() {
-                ProgressIndicator.hide();
                 var deferred = q.defer();
                 if (!accessToken) {
                     var inAppBrowser = window.open(signInUrl,'_blank', 'location=no');
@@ -185,10 +184,10 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                         if (e.url.indexOf("access_token=") > 0) {
                             accessToken = getAccessTokenFromURL(e.url);
                             generateURLs();
-                            deferred.resolve(accessToken);
                             setTimeout(function() {
                                 inAppBrowser.close();
                             },500);
+                            deferred.resolve(accessToken);
                         }
                     });
 
@@ -216,6 +215,13 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
 
                 inAppBrowser.addEventListener('exit', function(e) {
                    deferred.reject();
+                });
+
+                inAppBrowser.addEventListener('loaderror', function(e) {
+                    setTimeout(function() {
+                        inAppBrowser.close();
+                    },500);
+                    deferred.reject(e);
                 });
 
                 return deferred.promise;
