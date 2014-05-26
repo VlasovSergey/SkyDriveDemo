@@ -33,7 +33,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                 function (response) {
                     response = getDataFromJSONP(response);
                     if(response.error) {
-                        if(response.error.code = TOKEN_INVALID_CODE) {
+                        if (response.error.code == TOKEN_INVALID_CODE) {
                             accessToken = null;
                         }
                         deferred.reject(response.error);
@@ -176,7 +176,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                     var inAppBrowser = window.open(signInUrl,'_blank', 'location=no');
                     ProgressIndicator.show(true);
 
-                    inAppBrowser.addEventListener('loadstop',function(e) {
+                    inAppBrowser.addEventListener('loadstop', function() {
                         ProgressIndicator.hide();
                     });
 
@@ -192,7 +192,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                     });
 
                     inAppBrowser.addEventListener('exit', function(e) {
-                        deferred.reject(accessToken);
+                        deferred.reject(accessToken, e);
                     });
                 } else {
                     deferred.resolve(accessToken);
@@ -214,7 +214,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                 });
 
                 inAppBrowser.addEventListener('exit', function(e) {
-                   deferred.reject();
+                   deferred.reject(e);
                 });
 
                 inAppBrowser.addEventListener('loaderror', function(e) {
@@ -267,7 +267,7 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                 window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
                     createDirectoryForPath(fileName, fileSystem).then( function() {
                         fileSystem.root.getFile(fileName, { create: true }, function (targetFile){
-                            var onSuccessThis = function(res){
+                            var onSuccessThis = function(){
                                     delete currentDownloads[uriString];
                                     onSuccess(targetFile.toNativeURL());
                                 },
@@ -286,6 +286,5 @@ window.CloudStorage = window.CloudStorage || function (_clientId, _redirectUri) 
                 currentDownloads[url].stop();
                 delete currentDownloads[url];
             }
-
         };
 };

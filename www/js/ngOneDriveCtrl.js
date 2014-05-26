@@ -51,7 +51,7 @@
         },
 
         accessTokenCheckAndShowStartDisplay = function() {
-            if (StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() == null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() == null) {
+            if (StorageManager.getStorageInstance(StorageManager.STORAGE_ONE_DRIVE).getAccessToken() === null && StorageManager.getStorageInstance(StorageManager.STORAGE_GOOGLE_DRIVE).getAccessToken() === null) {
                 scope.driveManager = false;
             }
             showStartDisplay();
@@ -289,7 +289,6 @@
                         accessTokenDb.removeItem(driveManager.getStorageName());
                         accessTokenCheckAndShowStartDisplay();
                     }, function() {
-                        navigator.notification.alert("Failed SignOut", null, 'Failed SignOut');
                         accessTokenCheckAndShowStartDisplay();
                     }
                 );
@@ -298,12 +297,6 @@
             scope.openFile = function(file) {
                 if (file.state == 1) {
                     window.plugins.fileOpener.open(file.localPath);
-                    return;
-                }
-
-                if (file.embedLink) {
-                    window.open(file.embedLink + '?' + driveManager.getAccessToken(), '_blank', 'location=no');
-                    return;
                 }
             };
 
@@ -314,23 +307,24 @@
 
             scope.stopDownload = function(file) {
                 driveManager.stopDownloadFile(file.source);
-            },
-            
+            };
+
             scope.toPreFolder = function() {
                 toPreFolder();
             };
- 
+
             scope.getCurrentDirectory = function() {
                 return scope.directory.replace(/[/]/g, "/ ");
-            }
+            };
 
-            scope.getStyleForType = function (obj) {
+            scope.getStyleForType = function(obj) {
                 if (obj.thumbnailLink) {
                     return {
                         'background-image': "url(" + obj.thumbnailLink + ")",
                         'background-size': '100%'
                     };
                 }
+
                 switch (obj.type) {
                     case "album": return {'background': "#3e4bff"};
                     case "audio":
@@ -361,7 +355,9 @@
                 return date.substr(0, 19).replace('T', ' ');
             };
 
-            scope.tabindex = function() { return device.platform.indexOf('Win') != -1 ? "1" : "" }
+            scope.tabindex = function() {
+                return device.platform.indexOf('Win') != -1 ? "1" : "";
+            };
 
             showStartDisplay();
 

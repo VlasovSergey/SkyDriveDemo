@@ -1,7 +1,3 @@
-/**
- * Created by sergey.vlasov on 2/18/14.
- */
-
 function GoogleDriveManager(clientId, redirectUri) {
     var ROOT_DIRECTORY = "root",
         DRIVE_NAME = "GoogleDrive",
@@ -16,7 +12,6 @@ function GoogleDriveManager(clientId, redirectUri) {
                 if (item.mimeType == 'application/vnd.google-apps.folder') {
                     item.type = 'folder';
                     // Require separate request to count child items
-                    //item.count = ""; // Just stub
                 } else {
                     item.type = 'file';
                 }
@@ -32,10 +27,6 @@ function GoogleDriveManager(clientId, redirectUri) {
                 // Dont work, item size did not shown in interface
                 item.size = item.fileSize;
                 item.name = item.title;
-                // TODO: try exportLinks property
-                //item.source = item.source || item.downloadUrl;
-
-                //
             });
         },
 

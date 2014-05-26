@@ -1,5 +1,3 @@
-/**
- * Created by sergey.vlasov on 3/3/14.*/
 (function(){
     var OneDriveDB = function(DB,tablename, _keyPath) {
         var db = DB,
@@ -11,7 +9,7 @@
             addItem = function(data, onsuccess, onerror) {
                 readItem(data[keyPath], function(fileData) {
                     if (fileData) {
-                        replaceItem(data[keyPath], data, onsuccess, onerror)
+                        replaceItem(data[keyPath], data, onsuccess, onerror);
                     } else {
                         var transaction = db.transaction([tableName], "readwrite"),
                             objectStore = transaction.objectStore(tableName),
@@ -31,8 +29,8 @@
 
             removeItem = function(id, onsuccess, onerror) {
                 var request = getObjectStore()["delete"](id);
-                /*request.onsuccess = onsuccess;
-                request.onerror = onerror;*/
+                request.onsuccess = onsuccess;
+                request.onerror = onerror;
             },
 
             replaceItem = function(id, newObj, onsuccess, onerror) {
@@ -43,11 +41,11 @@
                 request.onerror = onerror;
             };
         return {
-            addItem : addItem,
-            readItem: readItem,
-            removeItem: removeItem,
-            replaceItem: replaceItem
-        };
+                addItem : addItem,
+                readItem: readItem,
+                removeItem: removeItem,
+                replaceItem: replaceItem
+            };
         };
 
         window.DbManager = window.DbManager || {
@@ -61,7 +59,7 @@
                             store.parametersArray.forEach(function(nameIndex) {
                                 objectStore.createIndex(nameIndex, nameIndex, { unique: false });
                             });
-                        })
+                        });
                     };
                 idbRequest.onsuccess = function(event) {
                     var db = event.target.result,
@@ -72,7 +70,7 @@
                     });
                     onSuccess(dbArray);
 
-                }
+                };
             },
 
             deleteDB: function(nameDB) {
@@ -84,7 +82,7 @@
                     storeName: storeName,
                     keyPath: keyPath,
                     parametersArray: parametersArray
-                }
+                };
             }
         };
 }());

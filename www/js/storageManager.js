@@ -36,7 +36,6 @@
                             break;
                         default:
                             throw new Error("unsupported storage: " + storageName);
-                            break;
                     }
 
                     if (!storage) throw new Error ("storage instance has not been created: " + storageName);
